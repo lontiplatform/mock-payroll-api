@@ -1,0 +1,621 @@
+{
+    "input": [
+        {
+            "name": "input",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "userId"
+                },
+                {
+                    "name": "period",
+                    "type": "model",
+                    "gloopProperties": [
+                        {
+                            "name": "startDate",
+                            "type": "date"
+                        },
+                        {
+                            "name": "endDate",
+                            "type": "date"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "payrollSummary",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.PayrollSummary"
+        },
+        {
+            "name": "error",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "fetch the user from the database",
+                    "name": "io.toro.mock.payroll.api.controller.user.GetUser",
+                    "inputs": [
+                        {
+                            "from": [
+                                "input",
+                                "userId"
+                            ],
+                            "to": [
+                                "userId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "user",
+                                "name"
+                            ],
+                            "to": [
+                                "payrollSummary",
+                                "user",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "user",
+                                "hourlyRate"
+                            ],
+                            "to": [
+                                "payrollSummary",
+                                "user",
+                                "hourlyRate"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "fetch user attendance within the given period",
+                    "name": "io.toro.mock.payroll.api.controller.attendance.ListUserAttendanceInPeriod",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "recordsCursor",
+                                    "type": "model",
+                                    "array": true,
+                                    "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord",
+                                    "gloopProperties": [
+                                        {
+                                            "name": "id"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "attendanceRecords",
+                                    "type": "model",
+                                    "array": true,
+                                    "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord"
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "input",
+                                "userId"
+                            ],
+                            "to": [
+                                "userId"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "input",
+                                "period",
+                                "startDate"
+                            ],
+                            "to": [
+                                "startDate"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "input",
+                                "period",
+                                "endDate"
+                            ],
+                            "to": [
+                                "endDate"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "attendanceRecords"
+                            ],
+                            "to": [
+                                "recordsCursor"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "input": {
+                        "path": [
+                            "recordsCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "attendanceRecords"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "lines": [
+                                {
+                                    "from": [
+                                        "recordsCursor",
+                                        "date"
+                                    ],
+                                    "to": [
+                                        "attendanceRecords",
+                                        "date"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "recordsCursor",
+                                        "hoursWorked"
+                                    ],
+                                    "to": [
+                                        "attendanceRecords",
+                                        "hoursWorked"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "input": {
+                        "path": [
+                            "recordsCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "payrollSummary",
+                            "attendanceRecords"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "lines": [
+                                {
+                                    "from": [
+                                        "recordsCursor",
+                                        "date"
+                                    ],
+                                    "to": [
+                                        "payrollSummary",
+                                        "attendanceRecords",
+                                        "date"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "recordsCursor",
+                                        "hoursWorked"
+                                    ],
+                                    "to": [
+                                        "payrollSummary",
+                                        "attendanceRecords",
+                                        "hoursWorked"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "recordsCursor",
+                                        "id"
+                                    ],
+                                    "to": [
+                                        "payrollSummary",
+                                        "attendanceRecords",
+                                        "id"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "calculate the user's gross pay",
+                    "name": "io.toro.mock.payroll.util.CalculateGrossPay",
+                    "unload": [
+                        [
+                            "attendanceRecords"
+                        ],
+                        [
+                            "recordsCursor"
+                        ]
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "payrollSummary",
+                                "user",
+                                "hourlyRate"
+                            ],
+                            "to": [
+                                "hourlyRate"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "attendanceRecords"
+                            ],
+                            "to": [
+                                "attendanceRecords"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "grossPay"
+                            ],
+                            "to": [
+                                "payrollSummary",
+                                "grossPay"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "fetch deductions applicable to user",
+                    "name": "io.toro.mock.payroll.api.controller.deduction.GetApplicableDeductions",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "deductionsCursor",
+                                    "type": "model",
+                                    "array": true,
+                                    "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+                                    "gloopProperties": [
+                                        {
+                                            "name": "id"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "name": "deductions",
+                                    "type": "model",
+                                    "array": true,
+                                    "reference": "io.toro.mock.payroll.model.deduction.Deduction"
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "input",
+                                "userId"
+                            ],
+                            "to": [
+                                "userId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "deductions"
+                            ],
+                            "to": [
+                                "deductionsCursor"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "input": {
+                        "path": [
+                            "deductionsCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "deductions"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "lines": [
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "name"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "description"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "description"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "type"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "method"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "method"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "amount"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "amount"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "applicableTo"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "applicableTo"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "enabled"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "enabled"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "input": {
+                        "path": [
+                            "deductionsCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "payrollSummary",
+                            "deductions"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "lines": [
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "id"
+                                    ],
+                                    "to": [
+                                        "payrollSummary",
+                                        "deductions",
+                                        "id"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "name"
+                                    ],
+                                    "to": [
+                                        "payrollSummary",
+                                        "deductions",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "type"
+                                    ],
+                                    "to": [
+                                        "payrollSummary",
+                                        "deductions",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "method"
+                                    ],
+                                    "to": [
+                                        "payrollSummary",
+                                        "deductions",
+                                        "method"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "amount"
+                                    ],
+                                    "to": [
+                                        "payrollSummary",
+                                        "deductions",
+                                        "amount"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "calculate the user's net pay",
+                    "name": "io.toro.mock.payroll.util.CalculateNetPay",
+                    "unload": [
+                        [
+                            "deductions"
+                        ],
+                        [
+                            "deductionsCursor"
+                        ]
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "payrollSummary",
+                                "grossPay"
+                            ],
+                            "to": [
+                                "grossPay"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deductions"
+                            ],
+                            "to": [
+                                "deductions"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "netPay"
+                            ],
+                            "to": [
+                                "payrollSummary",
+                                "netPay"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "error",
+                                "result"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "error",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

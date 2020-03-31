@@ -1,0 +1,502 @@
+{
+    "comments": "This service calculates the user's net pay by applying the necessary deductions.",
+    "input": [
+        {
+            "name": "grossPay",
+            "type": "double"
+        },
+        {
+            "name": "deductions",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.payroll.model.deduction.Deduction"
+        }
+    ],
+    "output": [
+        {
+            "name": "netPay",
+            "type": "double"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "preTaxDeductions",
+                                    "type": "model",
+                                    "array": true,
+                                    "reference": "io.toro.mock.payroll.model.deduction.Deduction"
+                                },
+                                {
+                                    "name": "taxDeductions",
+                                    "type": "model",
+                                    "array": true,
+                                    "reference": "io.toro.mock.payroll.model.deduction.Deduction"
+                                },
+                                {
+                                    "name": "postTaxDeductions",
+                                    "type": "model",
+                                    "array": true,
+                                    "reference": "io.toro.mock.payroll.model.deduction.Deduction"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "categorize deductions by type",
+                    "input": {
+                        "path": [
+                            "deductions"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "type": "fork",
+                            "comments": "check the deduction type",
+                            "expression": "deductions.type",
+                            "children": [
+                                {
+                                    "type": "invokeCode",
+                                    "label": "PRE-TAX",
+                                    "comments": "add to pre-tax deductions",
+                                    "className": "io.toro.martini.ArrayMethods",
+                                    "methodName": "addToList",
+                                    "parameters": [
+                                        "java.lang.Object",
+                                        "java.lang.Object"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "deductions"
+                                            ],
+                                            "to": [
+                                                "element"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "preTaxDeductions"
+                                            ],
+                                            "to": [
+                                                "list"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeCode",
+                                    "label": "TAX",
+                                    "comments": "add to tax deductions",
+                                    "className": "io.toro.martini.ArrayMethods",
+                                    "methodName": "addToList",
+                                    "parameters": [
+                                        "java.lang.Object",
+                                        "java.lang.Object"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "deductions"
+                                            ],
+                                            "to": [
+                                                "element"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "taxDeductions"
+                                            ],
+                                            "to": [
+                                                "list"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeCode",
+                                    "label": "POST-TAX",
+                                    "comments": "add to post-tax deductions",
+                                    "className": "io.toro.martini.ArrayMethods",
+                                    "methodName": "addToList",
+                                    "parameters": [
+                                        "java.lang.Object",
+                                        "java.lang.Object"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "deductions"
+                                            ],
+                                            "to": [
+                                                "element"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "postTaxDeductions"
+                                            ],
+                                            "to": [
+                                                "list"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "subtract pre-tax deductions from the gross pay",
+                    "name": "io.toro.mock.payroll.util.ApplyDeductions",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "preTaxValue",
+                                    "type": "double"
+                                }
+                            ]
+                        }
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "grossPay"
+                            ],
+                            "to": [
+                                "originalValue"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "preTaxDeductions",
+                                "name"
+                            ],
+                            "to": [
+                                "deductions",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "preTaxDeductions",
+                                "description"
+                            ],
+                            "to": [
+                                "deductions",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "preTaxDeductions",
+                                "type"
+                            ],
+                            "to": [
+                                "deductions",
+                                "type"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "preTaxDeductions",
+                                "method"
+                            ],
+                            "to": [
+                                "deductions",
+                                "method"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "preTaxDeductions",
+                                "amount"
+                            ],
+                            "to": [
+                                "deductions",
+                                "amount"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "preTaxDeductions",
+                                "applicableTo"
+                            ],
+                            "to": [
+                                "deductions",
+                                "applicableTo"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "preTaxDeductions",
+                                "enabled"
+                            ],
+                            "to": [
+                                "deductions",
+                                "enabled"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "resultingValue"
+                            ],
+                            "to": [
+                                "preTaxValue"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "subtract taxes from the resulting value",
+                    "name": "io.toro.mock.payroll.util.ApplyDeductions",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "postTaxValue",
+                                    "type": "double"
+                                }
+                            ]
+                        }
+                    ],
+                    "unload": [
+                        [
+                            "preTaxValue"
+                        ]
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "preTaxValue"
+                            ],
+                            "to": [
+                                "originalValue"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "taxDeductions",
+                                "name"
+                            ],
+                            "to": [
+                                "deductions",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "taxDeductions",
+                                "description"
+                            ],
+                            "to": [
+                                "deductions",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "taxDeductions",
+                                "type"
+                            ],
+                            "to": [
+                                "deductions",
+                                "type"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "taxDeductions",
+                                "method"
+                            ],
+                            "to": [
+                                "deductions",
+                                "method"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "taxDeductions",
+                                "amount"
+                            ],
+                            "to": [
+                                "deductions",
+                                "amount"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "taxDeductions",
+                                "applicableTo"
+                            ],
+                            "to": [
+                                "deductions",
+                                "applicableTo"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "taxDeductions",
+                                "enabled"
+                            ],
+                            "to": [
+                                "deductions",
+                                "enabled"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "resultingValue"
+                            ],
+                            "to": [
+                                "postTaxValue"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "subtract post-tax deductions from the resulting value",
+                    "name": "io.toro.mock.payroll.util.ApplyDeductions",
+                    "inputs": [
+                        {
+                            "from": [
+                                "postTaxValue"
+                            ],
+                            "to": [
+                                "originalValue"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "postTaxDeductions",
+                                "name"
+                            ],
+                            "to": [
+                                "deductions",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "postTaxDeductions",
+                                "description"
+                            ],
+                            "to": [
+                                "deductions",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "postTaxDeductions",
+                                "type"
+                            ],
+                            "to": [
+                                "deductions",
+                                "type"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "postTaxDeductions",
+                                "method"
+                            ],
+                            "to": [
+                                "deductions",
+                                "method"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "postTaxDeductions",
+                                "amount"
+                            ],
+                            "to": [
+                                "deductions",
+                                "amount"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "postTaxDeductions",
+                                "applicableTo"
+                            ],
+                            "to": [
+                                "deductions",
+                                "applicableTo"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "postTaxDeductions",
+                                "enabled"
+                            ],
+                            "to": [
+                                "deductions",
+                                "enabled"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "resultingValue"
+                            ],
+                            "to": [
+                                "netPay"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

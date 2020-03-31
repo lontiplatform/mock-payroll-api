@@ -1,0 +1,14 @@
+{
+    "name": "AttendanceRecord",
+    "type": "model",
+    "gloopProperties": [
+        {
+            "name": "date",
+            "type": "date"
+        },
+        {
+            "name": "hoursWorked",
+            "type": "double"
+        }
+    ]
+}

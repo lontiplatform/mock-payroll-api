@@ -1,0 +1,207 @@
+{
+    "comments": "This service updates a deduction in the database.",
+    "input": [
+        {
+            "name": "id"
+        },
+        {
+            "name": "deduction",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.deduction.Deduction"
+        }
+    ],
+    "output": [
+        {
+            "name": "response",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "update the deduction in the database",
+                    "name": "io.toro.mock.payroll.sql.deduction.UpdateDeduction",
+                    "inputs": [
+                        {
+                            "from": [
+                                "id"
+                            ],
+                            "to": [
+                                "updateDeductionInput",
+                                "id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "name"
+                            ],
+                            "to": [
+                                "updateDeductionInput",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "description"
+                            ],
+                            "to": [
+                                "updateDeductionInput",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "type"
+                            ],
+                            "to": [
+                                "updateDeductionInput",
+                                "type"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "method"
+                            ],
+                            "to": [
+                                "updateDeductionInput",
+                                "method"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "amount"
+                            ],
+                            "to": [
+                                "updateDeductionInput",
+                                "amount"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "applicableTo"
+                            ],
+                            "to": [
+                                "updateDeductionInput",
+                                "applicableTo"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "enabled"
+                            ],
+                            "to": [
+                                "updateDeductionInput",
+                                "enabled"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "\"Successfully updated deduction with id: ${id}\"",
+                            "evaluate": true,
+                            "to": [
+                                "response",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.type == 'SQLIntegrityConstraintViolationException' ? 400 : 500",
+                            "evaluate": true,
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "response",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

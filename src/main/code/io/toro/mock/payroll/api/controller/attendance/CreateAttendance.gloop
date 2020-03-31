@@ -1,0 +1,188 @@
+{
+    "comments": "This service records a user's attendance into the database.",
+    "input": [
+        {
+            "name": "userId"
+        },
+        {
+            "name": "attendanceRecord",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord"
+        }
+    ],
+    "output": [
+        {
+            "name": "response",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "comments": "generate a random ID",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "id"
+                                }
+                            ]
+                        }
+                    ],
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "UUID.randomUUID()",
+                            "evaluate": true,
+                            "to": [
+                                "id"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "insert the attendance record into the database",
+                    "name": "io.toro.mock.payroll.sql.attendance.InsertAttendance",
+                    "inputs": [
+                        {
+                            "from": [
+                                "id"
+                            ],
+                            "to": [
+                                "insertAttendanceInput",
+                                "id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "attendanceRecord",
+                                "date"
+                            ],
+                            "to": [
+                                "insertAttendanceInput",
+                                "recordDate"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "attendanceRecord",
+                                "hoursWorked"
+                            ],
+                            "to": [
+                                "insertAttendanceInput",
+                                "hoursWorked"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "userId"
+                            ],
+                            "to": [
+                                "insertAttendanceInput",
+                                "userId"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "201",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "\"Successfully recorded attendance with id ${id} for userId: ${userId}\"",
+                            "evaluate": true,
+                            "to": [
+                                "response",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "response",
+                                "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.type == 'SQLIntegrityConstraintViolationException' ? 400 : 500",
+                            "evaluate": true,
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

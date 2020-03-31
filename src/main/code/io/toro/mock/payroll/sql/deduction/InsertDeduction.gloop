@@ -1,0 +1,59 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "insertDeductionInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$getGeneratedKeys",
+                    "type": "boolean",
+                    "defaultValue": false
+                },
+                {
+                    "name": "id"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "description"
+                },
+                {
+                    "name": "type"
+                },
+                {
+                    "name": "applicableTo"
+                },
+                {
+                    "name": "method"
+                },
+                {
+                    "name": "amount",
+                    "type": "double"
+                },
+                {
+                    "name": "enabled",
+                    "type": "boolean"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        },
+        {
+            "name": "generatedKeys",
+            "type": "model",
+            "allowExtraProperties": true
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "INSERT",
+    "query": "INSERT INTO \"DEDUCTIONS\" (\n    \"ID\",\n    \"NAME\",\n    \"DESCRIPTION\",\n    \"TYPE\",\n    \"APPLICABLE_TO\",\n    \"METHOD\",\n    \"AMOUNT\",\n    \"ENABLED\"\n)\nVALUES (\n    :id,\n    :name,\n    :description,\n    :type,\n    :applicableTo,\n    :method,\n    :amount,\n    :enabled\n)"
+}

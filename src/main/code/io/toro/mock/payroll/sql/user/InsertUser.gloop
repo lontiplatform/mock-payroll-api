@@ -1,0 +1,43 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "insertUserInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$getGeneratedKeys",
+                    "type": "boolean",
+                    "defaultValue": false
+                },
+                {
+                    "name": "userId"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "hourlyRate",
+                    "type": "double"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        },
+        {
+            "name": "generatedKeys",
+            "type": "model",
+            "allowExtraProperties": true
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "INSERT",
+    "query": "INSERT INTO \"USERS\" (\n    \"USER_ID\",\n    \"NAME\",\n    \"HOURLY_RATE\"\n)\nVALUES (\n    :userId,\n    :name,\n    :hourlyRate\n)"
+}

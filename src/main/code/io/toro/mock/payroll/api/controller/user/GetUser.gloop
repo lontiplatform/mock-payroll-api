@@ -1,0 +1,193 @@
+{
+    "comments": "This service fetches a user from the database.",
+    "input": [
+        {
+            "name": "userId"
+        }
+    ],
+    "output": [
+        {
+            "name": "user",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.user.User",
+            "gloopProperties": [
+                {
+                    "name": "userId"
+                },
+                {
+                    "name": "hourlyRate",
+                    "type": "double"
+                }
+            ]
+        },
+        {
+            "name": "error",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "fetch the user form the database",
+                    "name": "io.toro.mock.payroll.sql.user.SelectUser",
+                    "inputs": [
+                        {
+                            "from": [
+                                "userId"
+                            ],
+                            "to": [
+                                "selectUserInput",
+                                "userid"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectUserOutput",
+                                "NAME"
+                            ],
+                            "to": [
+                                "user",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectUserOutput",
+                                "HOURLY_RATE"
+                            ],
+                            "to": [
+                                "user",
+                                "hourlyRate"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectUserOutput",
+                                "USERID"
+                            ],
+                            "to": [
+                                "user",
+                                "userId"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "user?.userId != null && user?.name != null",
+                    "children": [
+                        {
+                            "label": "false",
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "NOT FOUND",
+                                    "to": [
+                                        "error",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "\"Could not find a matching user with id ${userId}\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "error",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "error",
+                                "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "error",
+                                "result"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

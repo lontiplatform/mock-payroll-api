@@ -1,0 +1,44 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectUserInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "userid"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectUserOutput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "USER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "NAME",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "HOURLY_RATE",
+                    "type": "double",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "SELECT_SINGLE",
+    "query": "SELECT *\nFROM\n    \"USERS\"\nWHERE (\n    \"USER_ID\" = :userid\n)"
+}

@@ -1,0 +1,272 @@
+{
+    "comments": "This service lists deductions from the database.",
+    "output": [
+        {
+            "name": "deductions",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+            "gloopProperties": [
+                {
+                    "name": "id"
+                }
+            ]
+        },
+        {
+            "name": "error",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "fetch deductions from the database",
+                    "name": "io.toro.mock.payroll.sql.deduction.SelectAllDeductions",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "deductionsCursor",
+                                    "type": "model",
+                                    "array": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "ID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "NAME",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "DESCRIPTION",
+                                            "required": true
+                                        },
+                                        {
+                                            "name": "TYPE",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "APPLICABLE_TO",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "METHOD",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "AMOUNT",
+                                            "type": "double",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "ENABLED",
+                                            "type": "boolean",
+                                            "required": true,
+                                            "allowNull": false
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectAllDeductionsInputCursor"
+                            ],
+                            "to": [
+                                "deductionsCursor"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "map cursor to output",
+                    "input": {
+                        "path": [
+                            "deductionsCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "deductions"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "comments": "map data from cursor to output model",
+                            "lines": [
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "ID"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "id"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "NAME"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "DESCRIPTION"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "description"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "TYPE"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "APPLICABLE_TO"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "applicableTo"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "METHOD"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "method"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "AMOUNT"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "amount"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductionsCursor",
+                                        "ENABLED"
+                                    ],
+                                    "to": [
+                                        "deductions",
+                                        "enabled"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "error",
+                                "result"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "error",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

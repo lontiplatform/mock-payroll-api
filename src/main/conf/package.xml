@@ -1,0 +1,9 @@
+<package stateOnStartup="started" id="mock-payroll-api" version="1.0.0" context-path="/mock-payroll-api">
+  <package-dependencies/>
+  <startup-services>
+    <startup-service>gloop:io.toro.mock.payroll.config.CreateDatabaseConnection/io.toro.mock.payroll.config.CreateDatabaseConnection</startup-service>
+  </startup-services>
+  <shutdown-services>
+    <shutdown-service>gloop:io.toro.mock.payroll.config.DeleteDatabaseConnection/io.toro.mock.payroll.config.DeleteDatabaseConnection</shutdown-service>
+  </shutdown-services>
+</package>

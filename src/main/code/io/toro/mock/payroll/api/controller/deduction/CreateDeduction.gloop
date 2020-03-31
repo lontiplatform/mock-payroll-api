@@ -1,0 +1,226 @@
+{
+    "comments": "This service inserts a deduction into the database.",
+    "input": [
+        {
+            "name": "deduction",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.deduction.Deduction"
+        }
+    ],
+    "output": [
+        {
+            "name": "response",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "comments": "generate a random ID",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "id"
+                                }
+                            ]
+                        }
+                    ],
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "UUID.randomUUID()",
+                            "evaluate": true,
+                            "to": [
+                                "id"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeGloop",
+                    "comments": "insert the deduction into the database",
+                    "name": "io.toro.mock.payroll.sql.deduction.InsertDeduction",
+                    "inputs": [
+                        {
+                            "from": [
+                                "id"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "name"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "description"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "type"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "type"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "method"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "method"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "applicableTo"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "applicableTo"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "amount"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "amount"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "enabled"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "enabled"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "type": "set",
+                            "expression": "201",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "\"Successfully created deduction with id: ${id}\"",
+                            "evaluate": true,
+                            "to": [
+                                "response",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "response",
+                                "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopException.type == 'SQLIntegrityConstraintViolationException' ? 400 : 500",
+                            "evaluate": true,
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

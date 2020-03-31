@@ -1,0 +1,204 @@
+{
+    "comments": "This service fetches a deduction from the database.",
+    "input": [
+        {
+            "name": "id"
+        }
+    ],
+    "output": [
+        {
+            "name": "deduction",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+            "gloopProperties": [
+                {
+                    "name": "id"
+                }
+            ]
+        },
+        {
+            "name": "error",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "fetch the deduction from the database",
+                    "name": "io.toro.mock.payroll.sql.deduction.SelectDeduction",
+                    "inputs": [
+                        {
+                            "from": [
+                                "id"
+                            ],
+                            "to": [
+                                "selectDeductionInput",
+                                "id"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "NAME"
+                            ],
+                            "to": [
+                                "deduction",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "DESCRIPTION"
+                            ],
+                            "to": [
+                                "deduction",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "TYPE"
+                            ],
+                            "to": [
+                                "deduction",
+                                "type"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "METHOD"
+                            ],
+                            "to": [
+                                "deduction",
+                                "method"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "AMOUNT"
+                            ],
+                            "to": [
+                                "deduction",
+                                "amount"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "APPLICABLE_TO"
+                            ],
+                            "to": [
+                                "deduction",
+                                "applicableTo"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "ENABLED"
+                            ],
+                            "to": [
+                                "deduction",
+                                "enabled"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "ID"
+                            ],
+                            "to": [
+                                "deduction",
+                                "id"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "error",
+                                "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "error",
+                                "result"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

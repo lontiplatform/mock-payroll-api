@@ -1,0 +1,74 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectApplicableDeductionsInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$limit",
+                    "type": "integer"
+                },
+                {
+                    "name": "userId"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectApplicableDeductionsInputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "NAME",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "DESCRIPTION",
+                    "required": true
+                },
+                {
+                    "name": "TYPE",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "APPLICABLE_TO",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "METHOD",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "AMOUNT",
+                    "type": "double",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "ENABLED",
+                    "type": "boolean",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "SELECT_MULTI",
+    "query": "SELECT *\nFROM\n    \"DEDUCTIONS\"\nWHERE (\n    ( \"APPLICABLE_TO\" = :userId \n    OR \"APPLICABLE_TO\" = 'ALL' )\n    AND \"ENABLED\" = TRUE\n)"
+}

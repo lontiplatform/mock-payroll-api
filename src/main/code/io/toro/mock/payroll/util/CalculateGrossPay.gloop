@@ -1,0 +1,151 @@
+{
+    "comments": "This service is used to calculate the gross pay of the user.",
+    "input": [
+        {
+            "name": "attendanceRecords",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord"
+        },
+        {
+            "name": "hourlyRate",
+            "type": "double"
+        },
+        {
+            "name": "overtimeMultiplier",
+            "type": "double",
+            "defaultValue": 1.5
+        },
+        {
+            "name": "overtimeThreshold",
+            "type": "double",
+            "defaultValue": 40.0
+        }
+    ],
+    "output": [
+        {
+            "name": "grossPay",
+            "type": "double"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "comments": "declare total hours property",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "totalHours",
+                                    "type": "double"
+                                }
+                            ]
+                        }
+                    ],
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "0",
+                            "to": [
+                                "totalHours"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "add all hours worked",
+                    "input": {
+                        "path": [
+                            "attendanceRecords"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "totalHours + attendanceRecords.hoursWorked",
+                                    "evaluate": true,
+                                    "to": [
+                                        "totalHours"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "fork",
+                            "comments": "check if overtime pay will be included",
+                            "expression": "totalHours > overtimeThreshold",
+                            "children": [
+                                {
+                                    "label": "true",
+                                    "comments": "calculate gross pay with overtime multiplier",
+                                    "lines": [
+                                        {
+                                            "type": "set",
+                                            "expression": "def regularPay = overtimeThreshold * hourlyRate\ndef overtimeHours = ( totalHours - overtimeThreshold ) * hourlyRate * overtimeMultiplier\n\nregularPay * overtimeHours",
+                                            "evaluate": true,
+                                            "to": [
+                                                "grossPay"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": "false",
+                                    "comments": "if not, multiply hours worked by hourly rate",
+                                    "lines": [
+                                        {
+                                            "type": "set",
+                                            "expression": "totalHours * hourlyRate",
+                                            "evaluate": true,
+                                            "to": [
+                                                "grossPay"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,147 @@
+{
+    "comments": "This service fetches an attendance record from the database.",
+    "input": [
+        {
+            "name": "id"
+        }
+    ],
+    "output": [
+        {
+            "name": "attendanceRecord",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord",
+            "gloopProperties": [
+                {
+                    "name": "userId"
+                }
+            ]
+        },
+        {
+            "name": "error",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "fetch attendance record from the database",
+                    "name": "io.toro.mock.payroll.sql.attendance.SelectAttendance",
+                    "inputs": [
+                        {
+                            "from": [
+                                "id"
+                            ],
+                            "to": [
+                                "selectAttendanceInput",
+                                "id"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectAttendanceOutput",
+                                "USERID"
+                            ],
+                            "to": [
+                                "attendanceRecord",
+                                "userId"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAttendanceOutput",
+                                "RECORD_DATE"
+                            ],
+                            "to": [
+                                "attendanceRecord",
+                                "date"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAttendanceOutput",
+                                "HOURS_WORKED"
+                            ],
+                            "to": [
+                                "attendanceRecord",
+                                "hoursWorked"
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "error",
+                                "result"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "error",
+                                "message"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

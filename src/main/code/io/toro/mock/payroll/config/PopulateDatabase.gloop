@@ -1,0 +1,760 @@
+{
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "comments": "represent the data in the mock users file as a model",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "users",
+                                    "type": "model",
+                                    "array": true,
+                                    "allowExtraProperties": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "userId"
+                                        },
+                                        {
+                                            "name": "name"
+                                        },
+                                        {
+                                            "name": "hourlyRate",
+                                            "type": "double"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "fetch the contents of the mock users file as an input stream",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "inputStream",
+                                    "type": "object",
+                                    "objectClassName": "java.io.InputStream"
+                                }
+                            ]
+                        }
+                    ],
+                    "className": "io.toro.martini.FileMethods",
+                    "methodName": "resourceStream",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.String",
+                        "io.toro.gloop.engine.GloopExecutionContext"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "resources/mock-users.csv",
+                            "to": [
+                                "resource"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "output"
+                            ],
+                            "to": [
+                                "inputStream"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "map the contents to the users model that was previously declared",
+                    "unload": [
+                        [
+                            "inputStream"
+                        ]
+                    ],
+                    "className": "io.toro.martini.FlatFileMethods",
+                    "methodName": "getDelimitedFileInputCursor",
+                    "parameters": [
+                        "java.io.InputStream",
+                        "java.lang.String",
+                        "char",
+                        "java.lang.Character",
+                        "java.lang.Character",
+                        "java.lang.Character",
+                        "int",
+                        "boolean",
+                        "boolean",
+                        "boolean",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "io.toro.gloop.object.property.GloopModel",
+                        "java.lang.String[]",
+                        "java.lang.String",
+                        "io.toro.gloop.engine.GloopExecutionContext"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "inputStream"
+                            ],
+                            "to": [
+                                "flatFileData"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "users.keySet()",
+                            "evaluate": true,
+                            "to": [
+                                "fieldNames"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "output"
+                            ],
+                            "to": [
+                                "users"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "inform the user that users will be populated",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "info",
+                    "parameters": [
+                        "java.lang.String"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "Inserting dummy data into the users table...",
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "populate the database with mock users data",
+                    "input": {
+                        "path": [
+                            "users"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "comments": "log the user information for debugging purposes",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "println",
+                            "parameters": [
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "users.asJson()",
+                                    "evaluate": true,
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeGloop",
+                            "comments": "insert user data to the database",
+                            "name": "io.toro.mock.payroll.sql.user.InsertUser",
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "users",
+                                        "name"
+                                    ],
+                                    "to": [
+                                        "insertUserInput",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "users",
+                                        "hourlyRate"
+                                    ],
+                                    "to": [
+                                        "insertUserInput",
+                                        "hourlyRate"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "users",
+                                        "userId"
+                                    ],
+                                    "to": [
+                                        "insertUserInput",
+                                        "userId"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "represent the data in the mock attendance file as a model",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "attendance",
+                                    "type": "model",
+                                    "array": true,
+                                    "allowExtraProperties": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "id"
+                                        },
+                                        {
+                                            "name": "userId"
+                                        },
+                                        {
+                                            "name": "date",
+                                            "type": "date"
+                                        },
+                                        {
+                                            "name": "hoursWorked",
+                                            "type": "double"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "unload": [
+                        [
+                            "users"
+                        ]
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "fetch the contents of the mock attendance file as an input stream",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "inputStream",
+                                    "type": "object",
+                                    "objectClassName": "java.io.InputStream"
+                                }
+                            ]
+                        }
+                    ],
+                    "className": "io.toro.martini.FileMethods",
+                    "methodName": "resourceStream",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.String",
+                        "io.toro.gloop.engine.GloopExecutionContext"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "resources/mock-attendance.csv",
+                            "to": [
+                                "resource"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "output"
+                            ],
+                            "to": [
+                                "inputStream"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "map the contents to the attendance model that was previously declared",
+                    "unload": [
+                        [
+                            "inputStream"
+                        ]
+                    ],
+                    "className": "io.toro.martini.FlatFileMethods",
+                    "methodName": "getDelimitedFileInputCursor",
+                    "parameters": [
+                        "java.io.InputStream",
+                        "java.lang.String",
+                        "char",
+                        "java.lang.Character",
+                        "java.lang.Character",
+                        "java.lang.Character",
+                        "int",
+                        "boolean",
+                        "boolean",
+                        "boolean",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "io.toro.gloop.object.property.GloopModel",
+                        "java.lang.String[]",
+                        "java.lang.String",
+                        "io.toro.gloop.engine.GloopExecutionContext"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "inputStream"
+                            ],
+                            "to": [
+                                "flatFileData"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "attendance.keySet()",
+                            "evaluate": true,
+                            "to": [
+                                "fieldNames"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "output"
+                            ],
+                            "to": [
+                                "attendance"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "inform the user that attendance will be populated",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "info",
+                    "parameters": [
+                        "java.lang.String"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "Inserting dummy data into the attendance table...",
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "populate the database with mock attendance data",
+                    "input": {
+                        "path": [
+                            "attendance"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "comments": "log the attendance information for debugging purposes",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "println",
+                            "parameters": [
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "attendance.asJson()",
+                                    "evaluate": true,
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeGloop",
+                            "comments": "insert attendance data to the database",
+                            "name": "io.toro.mock.payroll.sql.attendance.InsertAttendance",
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "attendance",
+                                        "id"
+                                    ],
+                                    "to": [
+                                        "insertAttendanceInput",
+                                        "id"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "attendance",
+                                        "date"
+                                    ],
+                                    "to": [
+                                        "insertAttendanceInput",
+                                        "recordDate"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "attendance",
+                                        "hoursWorked"
+                                    ],
+                                    "to": [
+                                        "insertAttendanceInput",
+                                        "hoursWorked"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "attendance",
+                                        "userId"
+                                    ],
+                                    "to": [
+                                        "insertAttendanceInput",
+                                        "userId"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "represent the data in the mock deductions file as a model",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "deductions",
+                                    "type": "model",
+                                    "array": true,
+                                    "allowExtraProperties": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "id"
+                                        },
+                                        {
+                                            "name": "name"
+                                        },
+                                        {
+                                            "name": "type"
+                                        },
+                                        {
+                                            "name": "description"
+                                        },
+                                        {
+                                            "name": "method"
+                                        },
+                                        {
+                                            "name": "amount",
+                                            "type": "double"
+                                        },
+                                        {
+                                            "name": "applicableTo"
+                                        },
+                                        {
+                                            "name": "enabled",
+                                            "type": "boolean"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "unload": [
+                        [
+                            "attendance"
+                        ]
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "fetch the contents of the mock deductions file as an input stream",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "inputStream",
+                                    "type": "object",
+                                    "objectClassName": "java.io.InputStream"
+                                }
+                            ]
+                        }
+                    ],
+                    "className": "io.toro.martini.FileMethods",
+                    "methodName": "resourceStream",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.String",
+                        "io.toro.gloop.engine.GloopExecutionContext"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "resources/mock-deductions.csv",
+                            "to": [
+                                "resource"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "output"
+                            ],
+                            "to": [
+                                "inputStream"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "map the contents to the deductions model that was previously declared",
+                    "unload": [
+                        [
+                            "inputStream"
+                        ]
+                    ],
+                    "className": "io.toro.martini.FlatFileMethods",
+                    "methodName": "getDelimitedFileInputCursor",
+                    "parameters": [
+                        "java.io.InputStream",
+                        "java.lang.String",
+                        "char",
+                        "java.lang.Character",
+                        "java.lang.Character",
+                        "java.lang.Character",
+                        "int",
+                        "boolean",
+                        "boolean",
+                        "boolean",
+                        "java.lang.String",
+                        "java.lang.String",
+                        "io.toro.gloop.object.property.GloopModel",
+                        "java.lang.String[]",
+                        "java.lang.String",
+                        "io.toro.gloop.engine.GloopExecutionContext"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "inputStream"
+                            ],
+                            "to": [
+                                "flatFileData"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "deductions.keySet()",
+                            "evaluate": true,
+                            "to": [
+                                "fieldNames"
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "output"
+                            ],
+                            "to": [
+                                "deductions"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "invokeCode",
+                    "comments": "inform the user that deductions will be populated",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "info",
+                    "parameters": [
+                        "java.lang.String"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "Inserting dummy data into the deductions table...",
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "input": {
+                        "path": [
+                            "deductions"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "type": "invokeCode",
+                            "comments": "log the deduction information for debugging purposes",
+                            "className": "io.toro.martini.LoggerMethods",
+                            "methodName": "println",
+                            "parameters": [
+                                "java.lang.String"
+                            ],
+                            "inputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "deductions.asJson()",
+                                    "evaluate": true,
+                                    "to": [
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "invokeGloop",
+                            "name": "io.toro.mock.payroll.sql.deduction.InsertDeduction",
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "deductions",
+                                        "id"
+                                    ],
+                                    "to": [
+                                        "insertDeductionInput",
+                                        "id"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductions",
+                                        "name"
+                                    ],
+                                    "to": [
+                                        "insertDeductionInput",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductions",
+                                        "description"
+                                    ],
+                                    "to": [
+                                        "insertDeductionInput",
+                                        "description"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductions",
+                                        "type"
+                                    ],
+                                    "to": [
+                                        "insertDeductionInput",
+                                        "type"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductions",
+                                        "applicableTo"
+                                    ],
+                                    "to": [
+                                        "insertDeductionInput",
+                                        "applicableTo"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductions",
+                                        "method"
+                                    ],
+                                    "to": [
+                                        "insertDeductionInput",
+                                        "method"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductions",
+                                        "amount"
+                                    ],
+                                    "to": [
+                                        "insertDeductionInput",
+                                        "amount"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "deductions",
+                                        "enabled"
+                                    ],
+                                    "to": [
+                                        "insertDeductionInput",
+                                        "enabled"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

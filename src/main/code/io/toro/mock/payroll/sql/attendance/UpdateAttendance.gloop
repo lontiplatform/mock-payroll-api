@@ -1,0 +1,34 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "updateAttendanceInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "recordDate",
+                    "type": "date"
+                },
+                {
+                    "name": "hoursWorked",
+                    "type": "double"
+                },
+                {
+                    "name": "id"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "UPDATE",
+    "query": "UPDATE \"ATTENDANCE\"\nSET\n    \"RECORD_DATE\" = :recordDate,\n    \"HOURS_WORKED\" = :hoursWorked\nWHERE (\n    \"ID\" = :id\n)"
+}

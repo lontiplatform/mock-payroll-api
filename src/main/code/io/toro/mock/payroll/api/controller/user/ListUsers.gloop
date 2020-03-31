@@ -1,0 +1,200 @@
+{
+    "comments": "This service fetches all the users from the database.",
+    "output": [
+        {
+            "name": "users",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.payroll.model.user.User",
+            "gloopProperties": [
+                {
+                    "name": "userId"
+                },
+                {
+                    "name": "hourlyRate",
+                    "type": "double"
+                }
+            ]
+        },
+        {
+            "name": "error",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.APIResponse"
+        },
+        {
+            "name": "responseCode",
+            "type": "integer"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeGloop",
+                    "comments": "fetch all users from the database",
+                    "name": "io.toro.mock.payroll.sql.user.SelectAllUsers",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "usersCursor",
+                                    "type": "model",
+                                    "array": true,
+                                    "gloopProperties": [
+                                        {
+                                            "name": "USERID",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "NAME",
+                                            "required": true,
+                                            "allowNull": false
+                                        },
+                                        {
+                                            "name": "HOURLY_RATE",
+                                            "type": "double",
+                                            "allowNull": false
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "outputs": [
+                        {
+                            "from": [
+                                "selectAllUsersInputCursor"
+                            ],
+                            "to": [
+                                "usersCursor"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "200",
+                            "to": [
+                                "responseCode"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "map the cursor to the output",
+                    "input": {
+                        "path": [
+                            "usersCursor"
+                        ]
+                    },
+                    "output": {
+                        "path": [
+                            "users"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "comments": "map the data from the cursor to the output model",
+                            "lines": [
+                                {
+                                    "from": [
+                                        "usersCursor",
+                                        "NAME"
+                                    ],
+                                    "to": [
+                                        "users",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "usersCursor",
+                                        "USERID"
+                                    ],
+                                    "to": [
+                                        "users",
+                                        "userId"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "usersCursor",
+                                        "HOURLY_RATE"
+                                    ],
+                                    "to": [
+                                        "users",
+                                        "hourlyRate"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "map the appropriate error response",
+                    "lines": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "error",
+                                "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "responseCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "error",
+                                "result"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,69 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectDeductionInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "id"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectDeductionOutput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "NAME",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "DESCRIPTION",
+                    "required": true
+                },
+                {
+                    "name": "TYPE",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "APPLICABLE_TO",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "METHOD",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "AMOUNT",
+                    "type": "double",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "ENABLED",
+                    "type": "boolean",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "SELECT_SINGLE",
+    "query": "SELECT *\nFROM\n    \"DEDUCTIONS\"\nWHERE (\n    \"ID\" = :id\n)"
+}

@@ -1,0 +1,33 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "updateUserInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "hourlyRate",
+                    "type": "double"
+                },
+                {
+                    "name": "userid"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "updateCount",
+            "type": "integer"
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "UPDATE",
+    "query": "UPDATE \"USERS\"\nSET\n    \"NAME\" = COALESCE( :name, \"NAME\" ),\n    \"HOURLY_RATE\" = COALESCE( :hourlyRate, \"HOURLY_RATE\" )\nWHERE (\n    \"USER_ID\" = :userid\n)"
+}

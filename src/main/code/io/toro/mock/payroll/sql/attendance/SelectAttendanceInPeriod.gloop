@@ -1,0 +1,59 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectAttendanceInPeriodInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "$limit",
+                    "type": "integer"
+                },
+                {
+                    "name": "startDate",
+                    "type": "date"
+                },
+                {
+                    "name": "endDate",
+                    "type": "date"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectAttendanceInPeriodInputCursor",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "USER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "RECORD_DATE",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "HOURS_WORKED",
+                    "type": "double",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "SELECT_MULTI",
+    "query": "SELECT *\nFROM\n    \"ATTENDANCE\"\nWHERE (\n    \"RECORD_DATE\" BETWEEN :startDate AND :endDate\n)"
+}

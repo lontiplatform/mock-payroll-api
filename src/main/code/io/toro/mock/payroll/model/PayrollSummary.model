@@ -1,0 +1,62 @@
+{
+    "name": "PayrollSummary",
+    "type": "model",
+    "gloopProperties": [
+        {
+            "name": "user",
+            "type": "model",
+            "reference": "io.toro.mock.payroll.model.user.User",
+            "gloopProperties": [
+                {
+                    "name": "hourlyRate",
+                    "type": "double"
+                },
+                {
+                    "name": "userId"
+                }
+            ]
+        },
+        {
+            "name": "grossPay",
+            "type": "double"
+        },
+        {
+            "name": "netPay",
+            "type": "double"
+        },
+        {
+            "name": "attendanceRecords",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord",
+            "gloopProperties": [
+                {
+                    "name": "id"
+                }
+            ]
+        },
+        {
+            "name": "deductions",
+            "type": "model",
+            "array": true,
+            "gloopProperties": [
+                {
+                    "name": "id"
+                },
+                {
+                    "name": "name"
+                },
+                {
+                    "name": "type"
+                },
+                {
+                    "name": "method"
+                },
+                {
+                    "name": "amount",
+                    "type": "double"
+                }
+            ]
+        }
+    ]
+}

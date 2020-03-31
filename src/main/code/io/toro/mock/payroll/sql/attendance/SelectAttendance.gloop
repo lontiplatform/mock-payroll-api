@@ -1,0 +1,49 @@
+{
+    "type": "customSql",
+    "input": [
+        {
+            "name": "selectAttendanceInput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "$martiniConnectionPool"
+                },
+                {
+                    "name": "id"
+                }
+            ]
+        }
+    ],
+    "output": [
+        {
+            "name": "selectAttendanceOutput",
+            "type": "model",
+            "gloopProperties": [
+                {
+                    "name": "ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "USER_ID",
+                    "required": true,
+                    "allowNull": false
+                },
+                {
+                    "name": "RECORD_DATE",
+                    "type": "date",
+                    "required": true
+                },
+                {
+                    "name": "HOURS_WORKED",
+                    "type": "double",
+                    "required": true,
+                    "allowNull": false
+                }
+            ]
+        }
+    ],
+    "connectionPoolName": "mock_payroll_api",
+    "sqlType": "SELECT_SINGLE",
+    "query": "SELECT *\nFROM\n    \"ATTENDANCE\"\nWHERE (\n    \"ID\" = :id\n)"
+}

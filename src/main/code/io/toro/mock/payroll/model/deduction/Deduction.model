@@ -1,0 +1,42 @@
+{
+    "name": "Deduction",
+    "type": "model",
+    "gloopProperties": [
+        {
+            "name": "name"
+        },
+        {
+            "name": "description"
+        },
+        {
+            "name": "type",
+            "choices": [
+                "PRE-TAX",
+                "TAX",
+                "POST-TAX"
+            ]
+        },
+        {
+            "name": "method",
+            "choices": [
+                "FIXED",
+                "PERCENTAGE"
+            ]
+        },
+        {
+            "name": "amount",
+            "type": "double"
+        },
+        {
+            "name": "applicableTo",
+            "choices": [
+                "ALL"
+            ],
+            "allowOtherValues": true
+        },
+        {
+            "name": "enabled",
+            "type": "boolean"
+        }
+    ]
+}

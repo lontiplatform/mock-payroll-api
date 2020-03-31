@@ -1,0 +1,138 @@
+{
+    "comments": "This service subtracts the deductions from the original value.",
+    "input": [
+        {
+            "name": "originalValue",
+            "type": "double"
+        },
+        {
+            "name": "deductions",
+            "type": "model",
+            "array": true,
+            "reference": "io.toro.mock.payroll.model.deduction.Deduction"
+        }
+    ],
+    "output": [
+        {
+            "name": "resultingValue",
+            "type": "double"
+        }
+    ],
+    "steps": [
+        {
+            "type": "block",
+            "blockType": "TRY_CATCH",
+            "children": [
+                {
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "info",
+                    "parameters": [
+                        "java.lang.String"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "originalValue",
+                            "evaluate": true,
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "comments": "initialize the resulting value with the original value",
+                    "lines": [
+                        {
+                            "from": [
+                                "originalValue"
+                            ],
+                            "to": [
+                                "resultingValue"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "iterate",
+                    "comments": "subtract deductions",
+                    "input": {
+                        "path": [
+                            "deductions"
+                        ]
+                    },
+                    "children": [
+                        {
+                            "type": "fork",
+                            "comments": "check the deduction method",
+                            "expression": "deductions.method",
+                            "children": [
+                                {
+                                    "label": "FIXED",
+                                    "comments": "deduct fixed deduction",
+                                    "lines": [
+                                        {
+                                            "type": "set",
+                                            "expression": "if ( resultingValue != null )\n\tresultingValue - deductions?.amount",
+                                            "evaluate": true,
+                                            "to": [
+                                                "resultingValue"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "label": "PERCENTAGE",
+                                    "comments": "deduct percentage deduction",
+                                    "lines": [
+                                        {
+                                            "type": "set",
+                                            "expression": "if ( resultingValue != null )\n\tresultingValue - ( originalValue * deductions.amount/100 )",
+                                            "evaluate": true,
+                                            "to": [
+                                                "resultingValue"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "catch": [
+                {
+                    "type": "invokeCode",
+                    "comments": "log the exception received",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "error",
+                    "parameters": [
+                        "java.lang.String",
+                        "java.lang.Throwable"
+                    ],
+                    "inputs": [
+                        {
+                            "from": [
+                                "$gloopException",
+                                "gloopStackTrace"
+                            ],
+                            "to": [
+                                "message"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "$gloopException",
+                                "realException"
+                            ],
+                            "to": [
+                                "throwable"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

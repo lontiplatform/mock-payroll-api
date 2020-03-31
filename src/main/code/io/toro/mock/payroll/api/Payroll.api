@@ -1,0 +1,468 @@
+{
+    "info": {
+        "title": "Mock Payroll API",
+        "description": "A mock payroll API.",
+        "license": {
+            "name": "MIT"
+        },
+        "version": "1.0.0"
+    },
+    "basePath": "/mock-payroll-api",
+    "paths": {
+        "/users": {
+            "description": "Endpoint for listing and creating users.",
+            "get": {
+                "summary": "Displays a list of users.",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "body": "users",
+                        "description": "Returns a list of users."
+                    },
+                    "-1": {
+                        "body": "error",
+                        "description": "Returns the error response."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.user.ListUsers",
+                "responseCodeField": "responseCode"
+            },
+            "post": {
+                "summary": "Creates a single user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "user",
+                    "description": "The user data."
+                },
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the user creation."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.user.CreateUser",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/users/{userId}": {
+            "description": "Endpoint for viewing, updating, and deleting a single user.",
+            "get": {
+                "summary": "Fetches a single user.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "type": "PATH",
+                        "description": "The user ID."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "user",
+                        "description": "Returns the user data."
+                    },
+                    "-1": {
+                        "body": "error",
+                        "description": "Returns the error response."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.user.GetUser",
+                "responseCodeField": "responseCode"
+            },
+            "put": {
+                "summary": "Updates a single user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "type": "PATH",
+                        "description": "The user ID."
+                    }
+                ],
+                "bodyParameter": {
+                    "name": "user",
+                    "description": "The new user data to replace the current one."
+                },
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the user update."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.user.UpdateUser",
+                "responseCodeField": "responseCode"
+            },
+            "delete": {
+                "summary": "Deletes a single user.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "type": "PATH",
+                        "description": "The user ID."
+                    }
+                ],
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the user deletion."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.user.DeleteUser",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/users/{userId}/attendance": {
+            "description": "Endpoint for creating user attendance.",
+            "post": {
+                "summary": "Records a user's attendance.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "type": "PATH",
+                        "description": "The user ID."
+                    }
+                ],
+                "bodyParameter": {
+                    "name": "attendanceRecord",
+                    "description": "The attendance record data."
+                },
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the attendance creation."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.attendance.CreateAttendance",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/users/{userId}/deductions": {
+            "description": "Endpoint for creating and viewing user deductions.",
+            "get": {
+                "summary": "Fetches the deductions applicable to the user.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "type": "PATH",
+                        "description": "The user ID."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "deductions",
+                        "description": "Returns the list of deductions applicable to the user."
+                    },
+                    "-1": {
+                        "body": "error",
+                        "description": "Returns the error response."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.deduction.GetApplicableDeductions",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/attendance": {
+            "description": "Endpoint for listing attendance.",
+            "get": {
+                "summary": "Fetches all attendance within the given period.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "startDate",
+                        "type": "QUERY",
+                        "description": "The start date of attendance."
+                    },
+                    {
+                        "name": "endDate",
+                        "type": "QUERY",
+                        "description": "The end date of attendance."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "attendanceRecords",
+                        "description": "Returns the list of attendance.\n"
+                    },
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns "
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.attendance.ListAttendanceInPeriod",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/attendance/{id}": {
+            "description": "Endpoint for viewing, updating, and deleting a single attendance.",
+            "get": {
+                "summary": "Fetches a single attendance record.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "type": "PATH",
+                        "description": "The attendance ID."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "attendanceRecord",
+                        "description": "Returns the attena"
+                    },
+                    "-1": {
+                        "body": "error",
+                        "description": "Returns the error response."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.attendance.GetAttendance",
+                "responseCodeField": "responseCode"
+            },
+            "put": {
+                "summary": "Updates a single attendance record.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "type": "PATH",
+                        "description": "The attendance ID."
+                    }
+                ],
+                "bodyParameter": {
+                    "name": "attendanceRecord",
+                    "description": "The new attendance data to replace the current one."
+                },
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the attendance record update."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.attendance.UpdateAttendance",
+                "responseCodeField": "responseCode"
+            },
+            "delete": {
+                "summary": "Deletes a single attendance record.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "type": "PATH",
+                        "description": "The attendance ID."
+                    }
+                ],
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the attendance record deletion."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.attendance.DeleteAttendance",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/deductions": {
+            "description": "Endpoint for creating and listing deductions.",
+            "get": {
+                "summary": "Fetches all deductions.",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "body": "deductions",
+                        "description": "Returns a list of deductions."
+                    },
+                    "-1": {
+                        "body": "error",
+                        "description": "Returns the error response."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.deduction.ListDeduction",
+                "responseCodeField": "responseCode"
+            },
+            "post": {
+                "summary": "Creates a single deduction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "deduction",
+                    "description": "The deduction data."
+                },
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the deduction creation."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.deduction.CreateDeduction",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/deductions/{id}": {
+            "description": "Endpoint for viewing, updating, and deleting a single deduction.",
+            "get": {
+                "summary": "Fetches a single deduction.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "type": "PATH",
+                        "description": "The deduction ID."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "body": "deduction",
+                        "description": "Returns the deduction record."
+                    },
+                    "-1": {
+                        "body": "error",
+                        "description": "Returns the error response."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.deduction.GetDeduction",
+                "responseCodeField": "responseCode"
+            },
+            "put": {
+                "summary": "Updates a single deduction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "type": "PATH",
+                        "description": "The deduction ID."
+                    }
+                ],
+                "bodyParameter": {
+                    "name": "deduction",
+                    "description": "The new deduction data to replace the current one."
+                },
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the deduction update."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.deduction.UpdateDeduction",
+                "responseCodeField": "responseCode"
+            },
+            "delete": {
+                "summary": "Deletes a single deduction.",
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "type": "PATH",
+                        "description": "The deduction ID."
+                    }
+                ],
+                "responses": {
+                    "-1": {
+                        "body": "response",
+                        "description": "Returns the status of the deduction deletion."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.deduction.DeleteDeduction",
+                "responseCodeField": "responseCode"
+            }
+        },
+        "/generate-payroll": {
+            "description": "Endpoint for creating a payroll summary.",
+            "post": {
+                "summary": "Generates a payroll for a user in the given period.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "bodyParameter": {
+                    "name": "input",
+                    "description": "The user and period."
+                },
+                "responses": {
+                    "200": {
+                        "body": "payrollSummary",
+                        "description": "Returns the generated payroll summary."
+                    },
+                    "-1": {
+                        "body": "error",
+                        "description": "Returns the error response."
+                    }
+                },
+                "operationType": "gloop",
+                "operationLocation": "io.toro.mock.payroll.api.controller.GeneratePayroll",
+                "responseCodeField": "responseCode"
+            }
+        }
+    },
+    "externalDocumentation": {
+        "url": "http://example.com"
+    }
+}

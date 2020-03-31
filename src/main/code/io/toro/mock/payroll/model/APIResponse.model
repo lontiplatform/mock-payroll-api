@@ -1,0 +1,12 @@
+{
+    "name": "APIResponse",
+    "type": "model",
+    "gloopProperties": [
+        {
+            "name": "result"
+        },
+        {
+            "name": "message"
+        }
+    ]
+}
