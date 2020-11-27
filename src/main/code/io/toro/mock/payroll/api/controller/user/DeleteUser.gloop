@@ -1,5 +1,4 @@
 {
-    "comments": "This service deletes a user from the database.",
     "input": [
         {
             "name": "userId"
@@ -14,6 +13,11 @@
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -41,6 +45,14 @@
                             ],
                             "to": [
                                 "responseCode"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "APIException"
+                            ],
+                            "to": [
+                                "APIException"
                             ]
                         }
                     ]
@@ -91,28 +103,6 @@
                                     ]
                                 }
                             ]
-                        },
-                        {
-                            "label": "404",
-                            "lines": [
-                                {
-                                    "type": "set",
-                                    "expression": "FAILED",
-                                    "to": [
-                                        "response",
-                                        "result"
-                                    ]
-                                },
-                                {
-                                    "type": "set",
-                                    "expression": "\"No user with id ${userId}\"",
-                                    "evaluate": true,
-                                    "to": [
-                                        "response",
-                                        "message"
-                                    ]
-                                }
-                            ]
                         }
                     ]
                 }
@@ -152,16 +142,6 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "response",
-                                "message"
-                            ]
-                        },
-                        {
                             "type": "set",
                             "expression": "500",
                             "to": [
@@ -174,6 +154,30 @@
                             "to": [
                                 "response",
                                 "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
+                                "message"
                             ]
                         }
                     ]

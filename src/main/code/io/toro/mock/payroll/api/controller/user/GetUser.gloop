@@ -1,5 +1,4 @@
 {
-    "comments": "This service fetches a user from the database.",
     "input": [
         {
             "name": "userId"
@@ -7,27 +6,34 @@
     ],
     "output": [
         {
-            "name": "user",
+            "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.payroll.model.user.User",
+            "reference": "io.toro.mock.payroll.model.APIResponse",
             "gloopProperties": [
                 {
-                    "name": "userId"
-                },
-                {
-                    "name": "hourlyRate",
-                    "type": "double"
+                    "name": "user",
+                    "type": "model",
+                    "reference": "io.toro.mock.payroll.model.user.User",
+                    "gloopProperties": [
+                        {
+                            "name": "userId"
+                        },
+                        {
+                            "name": "hourlyRate",
+                            "type": "double"
+                        }
+                    ]
                 }
             ]
         },
         {
-            "name": "error",
-            "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
-        },
-        {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -54,11 +60,12 @@
                         {
                             "from": [
                                 "selectUserOutput",
-                                "NAME"
+                                "USER_ID"
                             ],
                             "to": [
+                                "response",
                                 "user",
-                                "name"
+                                "userId"
                             ]
                         },
                         {
@@ -67,6 +74,7 @@
                                 "HOURLY_RATE"
                             ],
                             "to": [
+                                "response",
                                 "user",
                                 "hourlyRate"
                             ]
@@ -74,11 +82,12 @@
                         {
                             "from": [
                                 "selectUserOutput",
-                                "USERID"
+                                "NAME"
                             ],
                             "to": [
+                                "response",
                                 "user",
-                                "userId"
+                                "name"
                             ]
                         },
                         {
@@ -92,7 +101,7 @@
                 },
                 {
                     "type": "fork",
-                    "expression": "user?.userId != null && user?.name != null",
+                    "expression": "response?.user?.userId != null && response?.user?.name != null",
                     "children": [
                         {
                             "label": "false",
@@ -106,18 +115,25 @@
                                 },
                                 {
                                     "type": "set",
-                                    "expression": "NOT FOUND",
+                                    "expression": "ERROR",
                                     "to": [
-                                        "error",
+                                        "APIException",
                                         "result"
                                     ]
                                 },
                                 {
                                     "type": "set",
-                                    "expression": "\"Could not find a matching user with id ${userId}\"",
-                                    "evaluate": true,
+                                    "expression": "404",
                                     "to": [
-                                        "error",
+                                        "APIException",
+                                        "httpErrorCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "User not found.",
+                                    "to": [
+                                        "APIException",
                                         "message"
                                     ]
                                 }
@@ -161,28 +177,10 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "error",
-                                "message"
-                            ]
-                        },
-                        {
                             "type": "set",
                             "expression": "500",
                             "to": [
                                 "responseCode"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "ERROR",
-                            "to": [
-                                "error",
-                                "result"
                             ]
                         }
                     ]

@@ -1,7 +1,13 @@
 {
+    "authTypes": [
+        "BASIC"
+    ],
+    "groups": [
+        "ESBAPIAdminGroup"
+    ],
     "info": {
         "title": "Mock Payroll API",
-        "description": "A mock payroll API.",
+        "description": "This is a sample payroll api. This can be used for mocking or testing APIs.\n\n### Sending Authenticated Requests\n\nYou can use your ECC account to send authenticated request to the API. Your ECC credentials must be sent in the `Authorization` header in the HTTP request\n\n#### To authenticate a request with basic authentication\n\n1. Combine your email and password with a colon (`:`). e.g. `jdoe@mailinator.com:pa$$w0rd`\n2. Encode the resulting string in Base64\n3. Include an Authorization header in the HTTP request containing the base64-encoded string. Example: ```\nAuthorization: Basic amRvZUBtYWlsaW5hdG9yLmNvbTpwYSQkdzByZA==```",
         "license": {
             "name": "MIT"
         },
@@ -12,18 +18,30 @@
         "/users": {
             "description": "Endpoint for listing and creating users.",
             "get": {
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Displays a list of users.",
+                "description": "Fetch all users in the api.",
                 "produces": [
                     "application/json"
                 ],
                 "responses": {
                     "200": {
-                        "body": "users",
-                        "description": "Returns a list of users."
+                        "body": "response",
+                        "description": "If the request is successful",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully fetched all users.\",\n    \"users\": [\n        {\n            \"name\": \"Kim Pinnere\",\n            \"userId\": \"0bb1f92c-7f1c-4016-b001-2684ba6c4900\",\n            \"hourlyRate\": 23.0\n        },\n        {\n            \"name\": \"Garner Eales\",\n            \"userId\": \"75f1c0ed-e3c5-4edb-bf64-c578319a3bd0\",\n            \"hourlyRate\": 21.0\n        },\n        {\n            \"name\": \"Brit Lorent\",\n            \"userId\": \"bd38b61a-bc8e-436d-b062-4785e685da42\",\n            \"hourlyRate\": 28.0\n        }\n    ]\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "error",
-                        "description": "Returns the error response."
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -31,7 +49,11 @@
                 "responseCodeField": "responseCode"
             },
             "post": {
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Creates a single user.",
+                "description": "Creates a new user for the api.",
                 "consumes": [
                     "application/json"
                 ],
@@ -43,9 +65,21 @@
                     "description": "The user data."
                 },
                 "responses": {
-                    "-1": {
+                    "201": {
                         "body": "response",
-                        "description": "Returns the status of the user creation."
+                        "description": "If the request is successful",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully created user with id: 469514e0-6161-4293-8c9c-c6549385ad8c\",\n    \"user\": {\n        \"name\": \"John Doe\",\n        \"userId\": \"469514e0-6161-4293-8c9c-c6549385ad8c\",\n        \"hourlyRate\": 13.5\n    }\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -69,12 +103,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "user",
-                        "description": "Returns the user data."
+                        "body": "response",
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"user\": {\n        \"name\": \"Kim Pinnere\",\n        \"userId\": \"0bb1f92c-7f1c-4016-b001-2684ba6c4900\",\n        \"hourlyRate\": 23.0\n    }\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "error",
-                        "description": "Returns the error response."
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the user is not found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"User not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -82,7 +132,11 @@
                 "responseCodeField": "responseCode"
             },
             "put": {
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Updates a single user.",
+                "description": "Updates a user in the api.",
                 "consumes": [
                     "application/json"
                 ],
@@ -101,9 +155,37 @@
                     "description": "The new user data to replace the current one."
                 },
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "response",
-                        "description": "Returns the status of the user update."
+                        "description": "If the request is sucessful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully updated user with id: 469514e0-6161-4293-8c9c-c6549385ad8c\",\n    \"user\": {\n        \"name\": \"John Doe\",\n        \"userId\": \"469514e0-6161-4293-8c9c-c6549385ad8c\",\n        \"hourlyRate\": 200.0\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the update failed to proceed due to an error.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Failed to update user. Check logs for more info.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the user to be updated is not found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"User not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception wile processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -111,7 +193,11 @@
                 "responseCodeField": "responseCode"
             },
             "delete": {
+                "tags": [
+                    "Users"
+                ],
                 "summary": "Deletes a single user.",
+                "description": "Deletes a user record, removing it from the payroll",
                 "produces": [
                     "application/json"
                 ],
@@ -123,9 +209,25 @@
                     }
                 ],
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "response",
-                        "description": "Returns the status of the user deletion."
+                        "description": "Returns the status of the user deletion.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully deleted user with id: 469514e0-6161-4293-8c9c-c6549385ad8c\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the user is not found, or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"User not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request."
                     }
                 },
                 "operationType": "gloop",
@@ -136,7 +238,11 @@
         "/users/{userId}/attendance": {
             "description": "Endpoint for creating user attendance.",
             "post": {
+                "tags": [
+                    "Attendance"
+                ],
                 "summary": "Records a user's attendance.",
+                "description": "Adds an attendance record for the given <code>userId</code>",
                 "consumes": [
                     "application/json"
                 ],
@@ -155,9 +261,37 @@
                     "description": "The attendance record data."
                 },
                 "responses": {
-                    "-1": {
+                    "201": {
                         "body": "response",
-                        "description": "Returns the status of the attendance creation."
+                        "description": "Returns the status of the attendance creation.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully recorded attendance with id ac755de9-0bb6-4262-8926-7dcfddabf877 for userId: 469514e0-6161-4293-8c9c-c6549385ad8c\",\n    \"attendanceRecord\": {\n        \"date\": \"2020-11-26T00:17:40+0800\",\n        \"hoursWorked\": 8.5,\n        \"userId\": \"469514e0-6161-4293-8c9c-c6549385ad8c\",\n        \"id\": \"ac755de9-0bb6-4262-8926-7dcfddabf877\"\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the attendance failed to be created due to an error.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Encountered an error while creating the attendance. Check the logs for more info.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the user is not found, or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"User does not exist.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing th request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -166,9 +300,13 @@
             }
         },
         "/users/{userId}/deductions": {
-            "description": "Endpoint for creating and viewing user deductions.",
+            "description": "Endpoint for creating and viewing user deductions applicale to a user.",
             "get": {
+                "tags": [
+                    "Deductions"
+                ],
                 "summary": "Fetches the deductions applicable to the user.",
+                "description": "Retrieves a list of applicable deductions for the given user.",
                 "produces": [
                     "application/json"
                 ],
@@ -181,12 +319,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "deductions",
-                        "description": "Returns the list of deductions applicable to the user."
+                        "body": "response",
+                        "description": "Returns the list of deductions applicable to the user.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Listing all deductions applicable for requested user.\",\n    \"deductions\": [\n        {\n            \"name\": \"Health Insurance\",\n            \"description\": \"Health insurance.\",\n            \"type\": \"PRE-TAX\",\n            \"method\": \"FIXED\",\n            \"amount\": 20.0,\n            \"applicableTo\": \"ALL\",\n            \"enabled\": true,\n            \"id\": \"a7331863-e000-4a63-9a4c-a91afa22a8ec\"\n        },\n        {\n            \"name\": \"Income Tax\",\n            \"description\": \"Income tax.\",\n            \"type\": \"TAX\",\n            \"method\": \"PERCENTAGE\",\n            \"amount\": 20.0,\n            \"applicableTo\": \"ALL\",\n            \"enabled\": true,\n            \"id\": \"b64b8e5e-5c2c-4d6a-a2c4-e53b08f1589a\"\n        }\n    ]\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "error",
-                        "description": "Returns the error response."
+                    "500": {
+                        "body": "APIException",
+                        "description": "Returns the error response.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Ecountered an exception while processing the request\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the user id provided does not exist, or is not found.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"User not found.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -197,6 +351,9 @@
         "/attendance": {
             "description": "Endpoint for listing attendance.",
             "get": {
+                "tags": [
+                    "Attendance"
+                ],
                 "summary": "Fetches all attendance within the given period.",
                 "produces": [
                     "application/json"
@@ -215,12 +372,20 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "attendanceRecords",
-                        "description": "Returns the list of attendance.\n"
-                    },
-                    "-1": {
                         "body": "response",
-                        "description": "Returns "
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Listing all attendance record from Thu Jan 01 08:00:00 PST 1970 to Wed Nov 25 13:25:42 PST 2020\",\n    \"attendanceRecords\": [\n        {\n            \"date\": \"2019-10-01T08:00:00+0800\",\n            \"hoursWorked\": 8.0,\n            \"id\": \"00bd2330-b8d8-4b65-b9a0-bd7ce137e3ea\",\n            \"userId\": \"0bb1f92c-7f1c-4016-b001-2684ba6c4900\"\n        },\n        {\n            \"date\": \"2019-10-03T08:00:00+0800\",\n            \"hoursWorked\": 8.0,\n            \"id\": \"11f9e2bd-3173-4f9f-8a08-d6569f8fef67\",\n            \"userId\": \"0bb1f92c-7f1c-4016-b001-2684ba6c4900\"\n        },\n        {\n            \"date\": \"2019-10-03T08:00:00+0800\",\n            \"hoursWorked\": 8.0,\n            \"id\": \"eefb89b0-7ce3-4fe0-be65-c182f8960a19\",\n            \"userId\": \"75f1c0ed-e3c5-4edb-bf64-c578319a3bd0\"\n        },\n        {\n            \"date\": \"2019-10-05T08:00:00+0800\",\n            \"hoursWorked\": 8.0,\n            \"id\": \"f98d505b-aeed-40a1-a009-fa9c3fb69455\",\n            \"userId\": \"bd38b61a-bc8e-436d-b062-4785e685da42\"\n        }\n    ]\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -231,6 +396,9 @@
         "/attendance/{id}": {
             "description": "Endpoint for viewing, updating, and deleting a single attendance.",
             "get": {
+                "tags": [
+                    "Attendance"
+                ],
                 "summary": "Fetches a single attendance record.",
                 "produces": [
                     "application/json"
@@ -244,12 +412,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "attendanceRecord",
-                        "description": "Returns the attena"
+                        "body": "response",
+                        "description": "If the request is succesful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"attendanceRecord\": {\n        \"date\": \"2019-10-03T08:00:00+0800\",\n        \"hoursWorked\": 8.0,\n        \"id\": \"eefb89b0-7ce3-4fe0-be65-c182f8960a19\",\n        \"userId\": \"75f1c0ed-e3c5-4edb-bf64-c578319a3bd0\"\n    }\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "error",
-                        "description": "Returns the error response."
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the attendance record is not found, or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Attendance record not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -257,6 +441,9 @@
                 "responseCodeField": "responseCode"
             },
             "put": {
+                "tags": [
+                    "Attendance"
+                ],
                 "summary": "Updates a single attendance record.",
                 "consumes": [
                     "application/json"
@@ -276,9 +463,37 @@
                     "description": "The new attendance data to replace the current one."
                 },
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "response",
-                        "description": "Returns the status of the attendance record update."
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully recorded attendance with id ac755de9-0bb6-4262-8926-7dcfddabf877\",\n    \"attendanceRecord\": {\n        \"date\": \"2020-11-26T00:17:40+0800\",\n        \"hoursWorked\": 8.5,\n        \"userId\": \"469514e0-6161-4293-8c9c-c6549385ad8c\",\n        \"id\": \"ac755de9-0bb6-4262-8926-7dcfddabf877\"\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the request could not be completed due to an error.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Encountered an error while processing the request. Check the logs for more info.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the attendance record could not be found, or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Attendance record not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception wile processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -287,6 +502,7 @@
             },
             "delete": {
                 "summary": "Deletes a single attendance record.",
+                "description": "Remove an attendance record in the api.",
                 "produces": [
                     "application/json"
                 ],
@@ -298,9 +514,25 @@
                     }
                 ],
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "response",
-                        "description": "Returns the status of the attendance record deletion."
+                        "description": "If the attendance was successfully deleted."
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the attendance to be deleted could not be found, or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Attendance record not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -311,18 +543,30 @@
         "/deductions": {
             "description": "Endpoint for creating and listing deductions.",
             "get": {
+                "tags": [
+                    "Deductions"
+                ],
                 "summary": "Fetches all deductions.",
+                "description": "For listing all created deductions for an employee's payroll.",
                 "produces": [
                     "application/json"
                 ],
                 "responses": {
                     "200": {
-                        "body": "deductions",
-                        "description": "Returns a list of deductions."
+                        "body": "response",
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Deductions fetch successfully.\",\n    \"deductions\": [\n        {\n            \"name\": \"Child Support\",\n            \"description\": \"Child support.\",\n            \"type\": \"POST-TAX\",\n            \"method\": \"FIXED\",\n            \"amount\": 50.0,\n            \"applicableTo\": \"bd38b61a-bc8e-436d-b062-4785e685da42\",\n            \"enabled\": true,\n            \"id\": \"148dd9cc-235f-4339-9589-aa0465f12eb0\"\n        },\n        {\n            \"name\": \"Health Insurance\",\n            \"description\": \"Health insurance.\",\n            \"type\": \"PRE-TAX\",\n            \"method\": \"FIXED\",\n            \"amount\": 20.0,\n            \"applicableTo\": \"ALL\",\n            \"enabled\": true,\n            \"id\": \"a7331863-e000-4a63-9a4c-a91afa22a8ec\"\n        },\n        {\n            \"name\": \"Income Tax\",\n            \"description\": \"Income tax.\",\n            \"type\": \"TAX\",\n            \"method\": \"PERCENTAGE\",\n            \"amount\": 20.0,\n            \"applicableTo\": \"ALL\",\n            \"enabled\": true,\n            \"id\": \"b64b8e5e-5c2c-4d6a-a2c4-e53b08f1589a\"\n        }\n    ]\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "error",
-                        "description": "Returns the error response."
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -330,7 +574,11 @@
                 "responseCodeField": "responseCode"
             },
             "post": {
+                "tags": [
+                    "Deductions"
+                ],
                 "summary": "Creates a single deduction.",
+                "description": "Creates a new deduction rule that can be applied to employee payroll.",
                 "consumes": [
                     "application/json"
                 ],
@@ -342,9 +590,29 @@
                     "description": "The deduction data."
                 },
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "response",
-                        "description": "Returns the status of the deduction creation."
+                        "description": "Returns the status of the deduction creation.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully created deduction with id: 148dd9cc-235f-4339-9589-aa0465f12eb0.\",\n    \"deduction\": {\n         \"name\": \"Child Support\",\n         \"description\": \"Child support.\",\n         \"type\": \"POST-TAX\",\n         \"method\": \"FIXED\",\n         \"amount\": 50.0,\n         \"applicableTo\": \"bd38b61a-bc8e-436d-b062-4785e685da42\",\n         \"enabled\": true,\n          \"id\": \"148dd9cc-235f-4339-9589-aa0465f12eb0\"\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the deduction has failed to be created due to errors.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Encountered an error while processing the request. Check the logs for more info.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -355,6 +623,9 @@
         "/deductions/{id}": {
             "description": "Endpoint for viewing, updating, and deleting a single deduction.",
             "get": {
+                "tags": [
+                    "Deductions"
+                ],
                 "summary": "Fetches a single deduction.",
                 "produces": [
                     "application/json"
@@ -368,12 +639,28 @@
                 ],
                 "responses": {
                     "200": {
-                        "body": "deduction",
-                        "description": "Returns the deduction record."
+                        "body": "response",
+                        "description": "If the request is successful.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"deduction\": {\n        \"name\": \"Income Tax\",\n        \"description\": \"Income tax.\",\n        \"type\": \"TAX\",\n        \"method\": \"PERCENTAGE\",\n        \"amount\": 20.0,\n        \"applicableTo\": \"ALL\",\n        \"enabled\": true,\n        \"id\": \"b64b8e5e-5c2c-4d6a-a2c4-e53b08f1589a\"\n    }\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "error",
-                        "description": "Returns the error response."
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the deduction record could not be found, or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 400,\n    \"message\": \"Deduction record not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -381,7 +668,11 @@
                 "responseCodeField": "responseCode"
             },
             "put": {
+                "tags": [
+                    "Deductions"
+                ],
                 "summary": "Updates a single deduction.",
+                "description": "Update details regarding a payroll deduction rule.",
                 "consumes": [
                     "application/json"
                 ],
@@ -400,9 +691,37 @@
                     "description": "The new deduction data to replace the current one."
                 },
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "response",
-                        "description": "Returns the status of the deduction update."
+                        "description": "Returns the status of the deduction update.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully updated deduction with id: 148dd9cc-235f-4339-9589-aa0465f12eb0.\",\n    \"deduction\": {\n         \"name\": \"Child Support\",\n         \"description\": \"Child support.\",\n         \"type\": \"POST-TAX\",\n         \"method\": \"FIXED\",\n         \"amount\": 50.0,\n         \"applicableTo\": \"bd38b61a-bc8e-436d-b062-4785e685da42\",\n         \"enabled\": true,\n          \"id\": \"148dd9cc-235f-4339-9589-aa0465f12eb0\"\n    }\n}"
+                        }
+                    },
+                    "400": {
+                        "body": "APIException",
+                        "description": "If the request could not be completed due to an error.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an error while processing the request. Check the logs for more info.\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the deduction to be updated could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Deduction record not found.\"\n}"
+                        }
+                    },
+                    "500": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -410,7 +729,11 @@
                 "responseCodeField": "responseCode"
             },
             "delete": {
+                "tags": [
+                    "Deductions"
+                ],
                 "summary": "Deletes a single deduction.",
+                "description": "Remove a deduction rule that can be applied to an employee",
                 "produces": [
                     "application/json"
                 ],
@@ -422,9 +745,29 @@
                     }
                 ],
                 "responses": {
-                    "-1": {
+                    "200": {
                         "body": "response",
-                        "description": "Returns the status of the deduction deletion."
+                        "description": "Returns the status of the deduction deletion.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"SUCCESS\",\n    \"message\": \"Successfully deleted deduction with id: b64b8e5e-5c2c-4d6a-a2c4-e53b08f1589a\"\n}"
+                        }
+                    },
+                    "404": {
+                        "body": "APIException",
+                        "description": "If the deduction record to be deleted could not be found or does not exist.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 404,\n    \"message\": \"Deduction record not found.\"\n}"
+                        }
+                    },
+                    "-1": {
+                        "body": "APIException",
+                        "description": "If the server encountered an exception while processing the request.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -435,7 +778,11 @@
         "/generate-payroll": {
             "description": "Endpoint for creating a payroll summary.",
             "post": {
+                "tags": [
+                    "Payroll"
+                ],
                 "summary": "Generates a payroll for a user in the given period.",
+                "description": "Generates a payroll report including the gross pay and net pay of an employee, based on the attendance and deductions incurred.",
                 "consumes": [
                     "application/json"
                 ],
@@ -448,12 +795,20 @@
                 },
                 "responses": {
                     "200": {
-                        "body": "payrollSummary",
-                        "description": "Returns the generated payroll summary."
+                        "body": "response",
+                        "description": "Returns the generated payroll summary.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"payrollSummary\": {\n        \"user\": {\n            \"name\": \"Kim Pinnere\",\n            \"hourlyRate\": 23.0,\n            \"userId\": \"0bb1f92c-7f1c-4016-b001-2684ba6c4900\"\n        },\n        \"grossPay\": 119025.0,\n        \"netPay\": 119005.0,\n        \"attendanceRecords\": [\n            {\n                \"date\": \"2019-10-01T08:00:00+0800\",\n                \"hoursWorked\": 8.0,\n                \"id\": \"00bd2330-b8d8-4b65-b9a0-bd7ce137e3ea\"\n            },\n            {\n                \"date\": \"2019-10-03T08:00:00+0800\",\n                \"hoursWorked\": 8.0,\n                \"id\": \"11f9e2bd-3173-4f9f-8a08-d6569f8fef67\"\n            },\n            {\n                \"date\": \"2019-10-02T08:00:00+0800\",\n                \"hoursWorked\": 8.0,\n                \"id\": \"1f888729-c92e-4d0e-ad66-a4fb8b9c7cf4\"\n            },\n            {\n                \"date\": \"2019-10-04T08:00:00+0800\",\n                \"hoursWorked\": 11.75,\n                \"id\": \"8efd3c4d-8d73-41e7-9981-05b297c92a29\"\n            },\n            {\n                \"date\": \"2019-10-05T08:00:00+0800\",\n                \"hoursWorked\": 8.0,\n                \"id\": \"ec7c78c2-9956-4130-a0c3-7be37ae323bd\"\n            }\n        ],\n        \"deductions\": [\n            {\n                \"id\": \"a7331863-e000-4a63-9a4c-a91afa22a8ec\",\n                \"name\": \"Health Insurance\",\n                \"type\": \"PRE-TAX\",\n                \"method\": \"FIXED\",\n                \"amount\": 20.0\n            }\n        ]\n    }\n}"
+                        }
                     },
-                    "-1": {
-                        "body": "error",
-                        "description": "Returns the error response."
+                    "500": {
+                        "body": "APIException",
+                        "description": "Returns the error response.",
+                        "responseBodyMockData": {
+                            "mockDataType": "JSON",
+                            "mockData": "{\n    \"result\": \"ERROR\",\n    \"httpErrorCode\": 500,\n    \"message\": \"Encountered an exception while processing the request.\"\n}"
+                        }
                     }
                 },
                 "operationType": "gloop",
@@ -462,7 +817,34 @@
             }
         }
     },
+    "tags": [
+        {
+            "name": "Users",
+            "externalDocumentation": {
+                "url": "https://example.com"
+            }
+        },
+        {
+            "name": "Attendance",
+            "externalDocumentation": {
+                "url": "https://example.com"
+            }
+        },
+        {
+            "name": "Deductions",
+            "externalDocumentation": {
+                "url": "https://example.com"
+            }
+        },
+        {
+            "name": "Payroll",
+            "externalDocumentation": {
+                "url": "https://example.com"
+            }
+        }
+    ],
     "externalDocumentation": {
-        "url": "http://example.com"
+        "url": "http://example.com",
+        "description": "This is a sample payroll api. This can be used for mocking or testing APIs.\n\n### Sending Authenticated Requests\n\nYou can use your ECC account to send authenticated request to the API. Your ECC credentials must be sent in the `Authorization` header in the HTTP request\n\n#### To authenticate a request with basic authentication\n\n1. Combine your email and password with a colon (`:`). e.g. `jdoe@mailinator.com:pa$$w0rd`\n2. Encode the resulting string in Base64\n3. Include an Authorization header in the HTTP request containing the base64-encoded string. Example: ```\nAuthorization: Basic amRvZUBtYWlsaW5hdG9yLmNvbTpwYSQkdzByZA==```"
     }
 }

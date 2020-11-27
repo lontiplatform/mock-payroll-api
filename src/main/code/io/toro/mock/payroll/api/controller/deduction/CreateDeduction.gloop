@@ -1,5 +1,4 @@
 {
-    "comments": "This service inserts a deduction into the database.",
     "input": [
         {
             "name": "deduction",
@@ -11,11 +10,28 @@
         {
             "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
+            "reference": "io.toro.mock.payroll.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "deduction",
+                    "type": "model",
+                    "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+                    "gloopProperties": [
+                        {
+                            "name": "id"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -25,22 +41,91 @@
             "children": [
                 {
                     "comments": "generate a random ID",
-                    "declare": [
-                        {
-                            "variables": [
-                                {
-                                    "name": "id"
-                                }
-                            ]
-                        }
-                    ],
                     "lines": [
                         {
                             "type": "set",
                             "expression": "UUID.randomUUID()",
-                            "evaluate": true,
                             "to": [
+                                "response",
+                                "deduction",
                                 "id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "name"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "description"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "description"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "type"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "type"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "method"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "method"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "amount"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "amount"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "applicableTo"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "applicableTo"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "deduction",
+                                "enabled"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "enabled"
                             ]
                         }
                     ]
@@ -49,18 +134,19 @@
                     "type": "invokeGloop",
                     "comments": "insert the deduction into the database",
                     "name": "io.toro.mock.payroll.sql.deduction.InsertDeduction",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "created",
+                                    "type": "boolean"
+                                }
+                            ]
+                        }
+                    ],
                     "inputs": [
                         {
                             "from": [
-                                "id"
-                            ],
-                            "to": [
-                                "insertDeductionInput",
-                                "id"
-                            ]
-                        },
-                        {
-                            "from": [
                                 "deduction",
                                 "name"
                             ],
@@ -127,6 +213,17 @@
                             "to": [
                                 "insertDeductionInput",
                                 "enabled"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "response",
+                                "deduction",
+                                "id"
+                            ],
+                            "to": [
+                                "insertDeductionInput",
+                                "id"
                             ]
                         }
                     ],
@@ -153,6 +250,49 @@
                             "to": [
                                 "response",
                                 "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "$gloopOutput.updateCount > 0",
+                            "evaluate": true,
+                            "to": [
+                                "created"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "created",
+                    "children": [
+                        {
+                            "label": "false",
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIException",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "400",
+                                    "to": [
+                                        "APIException",
+                                        "httpErrorCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "Encountered an error while processing the request. Check the logs for more info.",
+                                    "to": [
+                                        "APIException",
+                                        "message"
+                                    ]
+                                }
                             ]
                         }
                     ]
@@ -193,18 +333,8 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "response",
-                                "message"
-                            ]
-                        },
-                        {
                             "type": "set",
-                            "expression": "$gloopException.type == 'SQLIntegrityConstraintViolationException' ? 400 : 500",
+                            "expression": "500",
                             "evaluate": true,
                             "to": [
                                 "responseCode"
@@ -216,6 +346,30 @@
                             "to": [
                                 "response",
                                 "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
+                                "message"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
                             ]
                         }
                     ]

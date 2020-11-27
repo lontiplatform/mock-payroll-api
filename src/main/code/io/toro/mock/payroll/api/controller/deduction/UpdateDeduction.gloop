@@ -1,5 +1,4 @@
 {
-    "comments": "This service updates a deduction in the database.",
     "input": [
         {
             "name": "id"
@@ -14,11 +13,28 @@
         {
             "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
+            "reference": "io.toro.mock.payroll.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "deduction",
+                    "type": "model",
+                    "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+                    "gloopProperties": [
+                        {
+                            "name": "id"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -28,112 +44,361 @@
             "children": [
                 {
                     "type": "invokeGloop",
-                    "comments": "update the deduction in the database",
-                    "name": "io.toro.mock.payroll.sql.deduction.UpdateDeduction",
+                    "name": "io.toro.mock.payroll.sql.deduction.SelectDeduction",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "deductionFound",
+                                    "type": "boolean"
+                                }
+                            ]
+                        }
+                    ],
                     "inputs": [
                         {
                             "from": [
                                 "id"
                             ],
                             "to": [
-                                "updateDeductionInput",
+                                "selectDeductionInput",
                                 "id"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "deduction",
-                                "name"
-                            ],
-                            "to": [
-                                "updateDeductionInput",
-                                "name"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "deduction",
-                                "description"
-                            ],
-                            "to": [
-                                "updateDeductionInput",
-                                "description"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "deduction",
-                                "type"
-                            ],
-                            "to": [
-                                "updateDeductionInput",
-                                "type"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "deduction",
-                                "method"
-                            ],
-                            "to": [
-                                "updateDeductionInput",
-                                "method"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "deduction",
-                                "amount"
-                            ],
-                            "to": [
-                                "updateDeductionInput",
-                                "amount"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "deduction",
-                                "applicableTo"
-                            ],
-                            "to": [
-                                "updateDeductionInput",
-                                "applicableTo"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "deduction",
-                                "enabled"
-                            ],
-                            "to": [
-                                "updateDeductionInput",
-                                "enabled"
                             ]
                         }
                     ],
                     "outputs": [
                         {
                             "type": "set",
-                            "expression": "200",
-                            "to": [
-                                "responseCode"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "SUCCESS",
-                            "to": [
-                                "response",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "\"Successfully updated deduction with id: ${id}\"",
+                            "expression": "$gloopOutput?.selectDeductionOutput?.ID != null",
                             "evaluate": true,
                             "to": [
-                                "response",
-                                "message"
+                                "deductionFound"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "deductionFound",
+                    "children": [
+                        {
+                            "type": "block",
+                            "label": "true",
+                            "children": [
+                                {
+                                    "type": "invokeGloop",
+                                    "comments": "update the deduction in the database",
+                                    "name": "io.toro.mock.payroll.sql.deduction.UpdateDeduction",
+                                    "declare": [
+                                        {
+                                            "variables": [
+                                                {
+                                                    "name": "recordUpdated",
+                                                    "type": "boolean"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "id"
+                                            ],
+                                            "to": [
+                                                "updateDeductionInput",
+                                                "id"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "deduction",
+                                                "name"
+                                            ],
+                                            "to": [
+                                                "updateDeductionInput",
+                                                "name"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "deduction",
+                                                "description"
+                                            ],
+                                            "to": [
+                                                "updateDeductionInput",
+                                                "description"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "deduction",
+                                                "type"
+                                            ],
+                                            "to": [
+                                                "updateDeductionInput",
+                                                "type"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "deduction",
+                                                "method"
+                                            ],
+                                            "to": [
+                                                "updateDeductionInput",
+                                                "method"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "deduction",
+                                                "amount"
+                                            ],
+                                            "to": [
+                                                "updateDeductionInput",
+                                                "amount"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "deduction",
+                                                "applicableTo"
+                                            ],
+                                            "to": [
+                                                "updateDeductionInput",
+                                                "applicableTo"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "deduction",
+                                                "enabled"
+                                            ],
+                                            "to": [
+                                                "updateDeductionInput",
+                                                "enabled"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "type": "set",
+                                            "expression": "200",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "SUCCESS",
+                                            "to": [
+                                                "response",
+                                                "result"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "\"Successfully updated deduction with id: ${id}\"",
+                                            "evaluate": true,
+                                            "to": [
+                                                "response",
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "$gloopOutput.updateCount > 0",
+                                            "evaluate": true,
+                                            "to": [
+                                                "recordUpdated"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "fork",
+                                    "expression": "recordUpdated",
+                                    "children": [
+                                        {
+                                            "type": "invokeGloop",
+                                            "label": "true",
+                                            "name": "io.toro.mock.payroll.sql.deduction.SelectDeduction",
+                                            "inputs": [
+                                                {
+                                                    "from": [
+                                                        "id"
+                                                    ],
+                                                    "to": [
+                                                        "selectDeductionInput",
+                                                        "id"
+                                                    ]
+                                                }
+                                            ],
+                                            "outputs": [
+                                                {
+                                                    "from": [
+                                                        "selectDeductionOutput",
+                                                        "ID"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deduction",
+                                                        "id"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "selectDeductionOutput",
+                                                        "ENABLED"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deduction",
+                                                        "enabled"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "selectDeductionOutput",
+                                                        "APPLICABLE_TO"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deduction",
+                                                        "applicableTo"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "selectDeductionOutput",
+                                                        "AMOUNT"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deduction",
+                                                        "amount"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "selectDeductionOutput",
+                                                        "METHOD"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deduction",
+                                                        "method"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "selectDeductionOutput",
+                                                        "TYPE"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deduction",
+                                                        "type"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "selectDeductionOutput",
+                                                        "DESCRIPTION"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deduction",
+                                                        "description"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "selectDeductionOutput",
+                                                        "NAME"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deduction",
+                                                        "name"
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "label": "false",
+                                            "lines": [
+                                                {
+                                                    "type": "set",
+                                                    "expression": "ERROR",
+                                                    "to": [
+                                                        "APIException",
+                                                        "result"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "400",
+                                                    "to": [
+                                                        "responseCode"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "400",
+                                                    "to": [
+                                                        "APIException",
+                                                        "httpErrorCode"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "Encountered an error while processing the request. Check the logs for more info.",
+                                                    "to": [
+                                                        "APIException",
+                                                        "message"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "false",
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIException",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "APIException",
+                                        "httpErrorCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "Deduction record not found.",
+                                    "to": [
+                                        "APIException",
+                                        "message"
+                                    ]
+                                }
                             ]
                         }
                     ]
@@ -175,7 +440,7 @@
                     "lines": [
                         {
                             "type": "set",
-                            "expression": "$gloopException.type == 'SQLIntegrityConstraintViolationException' ? 400 : 500",
+                            "expression": "500",
                             "evaluate": true,
                             "to": [
                                 "responseCode"
@@ -190,12 +455,26 @@
                             ]
                         },
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
+                            "type": "set",
+                            "expression": "ERROR",
                             "to": [
-                                "response",
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

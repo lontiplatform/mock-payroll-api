@@ -26,18 +26,25 @@
     ],
     "output": [
         {
-            "name": "payrollSummary",
+            "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.payroll.model.PayrollSummary"
-        },
-        {
-            "name": "error",
-            "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
+            "reference": "io.toro.mock.payroll.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "payrollSummary",
+                    "type": "model",
+                    "reference": "io.toro.mock.payroll.model.PayrollSummary"
+                }
+            ]
         },
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -63,10 +70,12 @@
                     "outputs": [
                         {
                             "from": [
+                                "response",
                                 "user",
                                 "name"
                             ],
                             "to": [
+                                "response",
                                 "payrollSummary",
                                 "user",
                                 "name"
@@ -74,13 +83,28 @@
                         },
                         {
                             "from": [
+                                "response",
                                 "user",
                                 "hourlyRate"
                             ],
                             "to": [
+                                "response",
                                 "payrollSummary",
                                 "user",
                                 "hourlyRate"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "response",
+                                "user",
+                                "userId"
+                            ],
+                            "to": [
+                                "response",
+                                "payrollSummary",
+                                "user",
+                                "userId"
                             ]
                         }
                     ]
@@ -202,6 +226,7 @@
                     },
                     "output": {
                         "path": [
+                            "response",
                             "payrollSummary",
                             "attendanceRecords"
                         ]
@@ -215,6 +240,7 @@
                                         "date"
                                     ],
                                     "to": [
+                                        "response",
                                         "payrollSummary",
                                         "attendanceRecords",
                                         "date"
@@ -226,6 +252,7 @@
                                         "hoursWorked"
                                     ],
                                     "to": [
+                                        "response",
                                         "payrollSummary",
                                         "attendanceRecords",
                                         "hoursWorked"
@@ -237,6 +264,7 @@
                                         "id"
                                     ],
                                     "to": [
+                                        "response",
                                         "payrollSummary",
                                         "attendanceRecords",
                                         "id"
@@ -261,20 +289,21 @@
                     "inputs": [
                         {
                             "from": [
+                                "attendanceRecords"
+                            ],
+                            "to": [
+                                "attendanceRecords"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "response",
                                 "payrollSummary",
                                 "user",
                                 "hourlyRate"
                             ],
                             "to": [
                                 "hourlyRate"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "attendanceRecords"
-                            ],
-                            "to": [
-                                "attendanceRecords"
                             ]
                         }
                     ],
@@ -284,6 +313,7 @@
                                 "grossPay"
                             ],
                             "to": [
+                                "response",
                                 "payrollSummary",
                                 "grossPay"
                             ]
@@ -331,6 +361,7 @@
                     "outputs": [
                         {
                             "from": [
+                                "response",
                                 "deductions"
                             ],
                             "to": [
@@ -437,6 +468,7 @@
                     },
                     "output": {
                         "path": [
+                            "response",
                             "payrollSummary",
                             "deductions"
                         ]
@@ -450,6 +482,7 @@
                                         "id"
                                     ],
                                     "to": [
+                                        "response",
                                         "payrollSummary",
                                         "deductions",
                                         "id"
@@ -461,6 +494,7 @@
                                         "name"
                                     ],
                                     "to": [
+                                        "response",
                                         "payrollSummary",
                                         "deductions",
                                         "name"
@@ -472,6 +506,7 @@
                                         "type"
                                     ],
                                     "to": [
+                                        "response",
                                         "payrollSummary",
                                         "deductions",
                                         "type"
@@ -480,23 +515,25 @@
                                 {
                                     "from": [
                                         "deductionsCursor",
-                                        "method"
+                                        "amount"
                                     ],
                                     "to": [
+                                        "response",
                                         "payrollSummary",
                                         "deductions",
-                                        "method"
+                                        "amount"
                                     ]
                                 },
                                 {
                                     "from": [
                                         "deductionsCursor",
-                                        "amount"
+                                        "method"
                                     ],
                                     "to": [
+                                        "response",
                                         "payrollSummary",
                                         "deductions",
-                                        "amount"
+                                        "method"
                                     ]
                                 }
                             ]
@@ -518,37 +555,39 @@
                     "inputs": [
                         {
                             "from": [
+                                "deductions"
+                            ],
+                            "to": [
+                                "deductions"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "response",
                                 "payrollSummary",
                                 "grossPay"
                             ],
                             "to": [
                                 "grossPay"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "deductions"
-                            ],
-                            "to": [
-                                "deductions"
                             ]
                         }
                     ],
                     "outputs": [
                         {
-                            "from": [
-                                "netPay"
-                            ],
-                            "to": [
-                                "payrollSummary",
-                                "netPay"
-                            ]
-                        },
-                        {
                             "type": "set",
                             "expression": "200",
                             "to": [
                                 "responseCode"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "netPay"
+                            ],
+                            "to": [
+                                "response",
+                                "payrollSummary",
+                                "netPay"
                             ]
                         }
                     ]
@@ -599,17 +638,23 @@
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "error",
+                                "APIException",
                                 "result"
                             ]
                         },
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
+                            "type": "set",
+                            "expression": "500",
                             "to": [
-                                "error",
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

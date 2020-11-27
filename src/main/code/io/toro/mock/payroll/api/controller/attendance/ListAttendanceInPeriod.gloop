@@ -1,5 +1,4 @@
 {
-    "comments": "This service lists the attendance records within the given period.",
     "input": [
         {
             "name": "startDate",
@@ -12,27 +11,34 @@
     ],
     "output": [
         {
-            "name": "attendanceRecords",
+            "name": "response",
             "type": "model",
-            "array": true,
-            "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord",
+            "reference": "io.toro.mock.payroll.model.APIResponse",
             "gloopProperties": [
                 {
-                    "name": "id"
-                },
-                {
-                    "name": "userId"
+                    "name": "attendanceRecords",
+                    "type": "model",
+                    "array": true,
+                    "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord",
+                    "gloopProperties": [
+                        {
+                            "name": "id"
+                        },
+                        {
+                            "name": "userId"
+                        }
+                    ]
                 }
             ]
         },
         {
-            "name": "response",
-            "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
-        },
-        {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -79,7 +85,7 @@
                                             "allowNull": false
                                         },
                                         {
-                                            "name": "USERID",
+                                            "name": "USER_ID",
                                             "required": true,
                                             "allowNull": false
                                         },
@@ -134,6 +140,23 @@
                             "to": [
                                 "responseCode"
                             ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "\"Listing all attendance record from ${startDate} to ${endDate}\"",
+                            "evaluate": true,
+                            "to": [
+                                "response",
+                                "message"
+                            ]
                         }
                     ]
                 },
@@ -147,6 +170,7 @@
                     },
                     "output": {
                         "path": [
+                            "response",
                             "attendanceRecords"
                         ]
                     },
@@ -160,6 +184,7 @@
                                         "ID"
                                     ],
                                     "to": [
+                                        "response",
                                         "attendanceRecords",
                                         "id"
                                     ]
@@ -167,9 +192,10 @@
                                 {
                                     "from": [
                                         "attendanceCursor",
-                                        "USERID"
+                                        "USER_ID"
                                     ],
                                     "to": [
+                                        "response",
                                         "attendanceRecords",
                                         "userId"
                                     ]
@@ -180,6 +206,7 @@
                                         "RECORD_DATE"
                                     ],
                                     "to": [
+                                        "response",
                                         "attendanceRecords",
                                         "date"
                                     ]
@@ -190,6 +217,7 @@
                                         "HOURS_WORKED"
                                     ],
                                     "to": [
+                                        "response",
                                         "attendanceRecords",
                                         "hoursWorked"
                                     ]
@@ -234,16 +262,6 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "response",
-                                "message"
-                            ]
-                        },
-                        {
                             "type": "set",
                             "expression": "500",
                             "to": [
@@ -256,6 +274,30 @@
                             "to": [
                                 "response",
                                 "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
+                                "message"
                             ]
                         }
                     ]

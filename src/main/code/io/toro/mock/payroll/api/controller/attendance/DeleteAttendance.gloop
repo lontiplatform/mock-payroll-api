@@ -1,5 +1,4 @@
 {
-    "comments": "This service deletes an attendance record from the database.",
     "input": [
         {
             "name": "id"
@@ -14,6 +13,11 @@
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -23,15 +27,24 @@
             "children": [
                 {
                     "type": "invokeGloop",
-                    "comments": "delete attendance record from the database",
-                    "name": "io.toro.mock.payroll.sql.attendance.DeleteAttendance",
+                    "name": "io.toro.mock.payroll.sql.attendance.SelectAttendance",
+                    "declare": [
+                        {
+                            "variables": [
+                                {
+                                    "name": "attendanceFound",
+                                    "type": "boolean"
+                                }
+                            ]
+                        }
+                    ],
                     "inputs": [
                         {
                             "from": [
                                 "id"
                             ],
                             "to": [
-                                "deleteAttendanceInput",
+                                "selectAttendanceInput",
                                 "id"
                             ]
                         }
@@ -39,26 +52,95 @@
                     "outputs": [
                         {
                             "type": "set",
-                            "expression": "201",
-                            "to": [
-                                "responseCode"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "SUCCESS",
-                            "to": [
-                                "response",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "\"Successfully deleted attendance record with id: ${id}\"",
+                            "expression": "$gloopOutput?.selectAttendanceOutput?.ID != null",
                             "evaluate": true,
                             "to": [
-                                "response",
-                                "message"
+                                "attendanceFound"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "attendanceFound",
+                    "children": [
+                        {
+                            "type": "invokeGloop",
+                            "label": "true",
+                            "comments": "delete attendance record from the database",
+                            "name": "io.toro.mock.payroll.sql.attendance.DeleteAttendance",
+                            "inputs": [
+                                {
+                                    "from": [
+                                        "id"
+                                    ],
+                                    "to": [
+                                        "deleteAttendanceInput",
+                                        "id"
+                                    ]
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "type": "set",
+                                    "expression": "200",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "SUCCESS",
+                                    "to": [
+                                        "response",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "\"Successfully deleted attendance record with id: ${id}\"",
+                                    "evaluate": true,
+                                    "to": [
+                                        "response",
+                                        "message"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "false",
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIException",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "APIException",
+                                        "httpErrorCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "Attendance record not found.",
+                                    "to": [
+                                        "APIException",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                }
                             ]
                         }
                     ]
@@ -99,6 +181,16 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
+                            "from": [
+                                "$gloopException",
+                                "message"
+                            ],
+                            "to": [
+                                "response",
+                                "message"
+                            ]
+                        },
+                        {
                             "type": "set",
                             "expression": "500",
                             "to": [
@@ -111,16 +203,6 @@
                             "to": [
                                 "response",
                                 "result"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "response",
-                                "message"
                             ]
                         }
                     ]

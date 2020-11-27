@@ -1,5 +1,4 @@
 {
-    "comments": "This service records a user's attendance into the database.",
     "input": [
         {
             "name": "userId"
@@ -14,11 +13,31 @@
         {
             "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
+            "reference": "io.toro.mock.payroll.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "attendanceRecord",
+                    "type": "model",
+                    "reference": "io.toro.mock.payroll.model.attendance.AttendanceRecord",
+                    "gloopProperties": [
+                        {
+                            "name": "userId"
+                        },
+                        {
+                            "name": "id"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -27,94 +46,275 @@
             "blockType": "TRY_CATCH",
             "children": [
                 {
-                    "comments": "generate a random ID",
+                    "type": "invokeGloop",
+                    "name": "io.toro.mock.payroll.sql.user.SelectUser",
                     "declare": [
                         {
                             "variables": [
                                 {
-                                    "name": "id"
+                                    "name": "userFound",
+                                    "type": "boolean"
                                 }
                             ]
                         }
                     ],
-                    "lines": [
-                        {
-                            "type": "set",
-                            "expression": "UUID.randomUUID()",
-                            "evaluate": true,
-                            "to": [
-                                "id"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "type": "invokeGloop",
-                    "comments": "insert the attendance record into the database",
-                    "name": "io.toro.mock.payroll.sql.attendance.InsertAttendance",
                     "inputs": [
                         {
                             "from": [
-                                "id"
-                            ],
-                            "to": [
-                                "insertAttendanceInput",
-                                "id"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "attendanceRecord",
-                                "date"
-                            ],
-                            "to": [
-                                "insertAttendanceInput",
-                                "recordDate"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "attendanceRecord",
-                                "hoursWorked"
-                            ],
-                            "to": [
-                                "insertAttendanceInput",
-                                "hoursWorked"
-                            ]
-                        },
-                        {
-                            "from": [
                                 "userId"
                             ],
                             "to": [
-                                "insertAttendanceInput",
-                                "userId"
+                                "selectUserInput",
+                                "userid"
                             ]
                         }
                     ],
                     "outputs": [
                         {
                             "type": "set",
-                            "expression": "201",
-                            "to": [
-                                "responseCode"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "SUCCESS",
-                            "to": [
-                                "response",
-                                "result"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "\"Successfully recorded attendance with id ${id} for userId: ${userId}\"",
+                            "expression": "$gloopOutput?.selectUserOutput?.USER_ID != null",
                             "evaluate": true,
                             "to": [
-                                "response",
-                                "message"
+                                "userFound"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "userFound",
+                    "children": [
+                        {
+                            "type": "block",
+                            "label": "true",
+                            "children": [
+                                {
+                                    "comments": "generate a random ID",
+                                    "lines": [
+                                        {
+                                            "from": [
+                                                "attendanceRecord",
+                                                "date"
+                                            ],
+                                            "to": [
+                                                "response",
+                                                "attendanceRecord",
+                                                "date"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "attendanceRecord",
+                                                "hoursWorked"
+                                            ],
+                                            "to": [
+                                                "response",
+                                                "attendanceRecord",
+                                                "hoursWorked"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "userId"
+                                            ],
+                                            "to": [
+                                                "response",
+                                                "attendanceRecord",
+                                                "userId"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "UUID.randomUUID()",
+                                            "evaluate": true,
+                                            "to": [
+                                                "response",
+                                                "attendanceRecord",
+                                                "id"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeCode",
+                                    "className": "io.toro.martini.LoggerMethods",
+                                    "methodName": "info",
+                                    "parameters": [
+                                        "java.lang.String"
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "type": "set",
+                                            "expression": "response.attendanceRecord.id",
+                                            "evaluate": true,
+                                            "to": [
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "invokeGloop",
+                                    "comments": "insert the attendance record into the database",
+                                    "name": "io.toro.mock.payroll.sql.attendance.InsertAttendance",
+                                    "declare": [
+                                        {
+                                            "variables": [
+                                                {
+                                                    "name": "updateCount",
+                                                    "type": "integer"
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "attendanceRecord",
+                                                "date"
+                                            ],
+                                            "to": [
+                                                "insertAttendanceInput",
+                                                "recordDate"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "attendanceRecord",
+                                                "hoursWorked"
+                                            ],
+                                            "to": [
+                                                "insertAttendanceInput",
+                                                "hoursWorked"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "userId"
+                                            ],
+                                            "to": [
+                                                "insertAttendanceInput",
+                                                "userId"
+                                            ]
+                                        },
+                                        {
+                                            "from": [
+                                                "response",
+                                                "attendanceRecord",
+                                                "id"
+                                            ],
+                                            "to": [
+                                                "insertAttendanceInput",
+                                                "id"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "from": [
+                                                "updateCount"
+                                            ],
+                                            "to": [
+                                                "updateCount"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "SUCCESS",
+                                            "to": [
+                                                "response",
+                                                "result"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "\"Successfully recorded attendance with id ${response.attendanceRecord.id} for userId: ${userId}\"",
+                                            "evaluate": true,
+                                            "to": [
+                                                "response",
+                                                "message"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "201",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "fork",
+                                    "expression": "updateCount > 0",
+                                    "children": [
+                                        {
+                                            "label": "false",
+                                            "lines": [
+                                                {
+                                                    "type": "set",
+                                                    "expression": "400",
+                                                    "to": [
+                                                        "responseCode"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "ERROR",
+                                                    "to": [
+                                                        "APIException",
+                                                        "result"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "400",
+                                                    "to": [
+                                                        "APIException",
+                                                        "httpErrorCode"
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "set",
+                                                    "expression": "Encountered an error while creating the attendance. Check the logs for more info.",
+                                                    "to": [
+                                                        "APIException",
+                                                        "message"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "false",
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIException",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "User not found.",
+                                    "to": [
+                                        "APIException",
+                                        "message"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "APIException",
+                                        "httpErrorCode"
+                                    ]
+                                }
                             ]
                         }
                     ]
@@ -155,18 +355,8 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "response",
-                                "message"
-                            ]
-                        },
-                        {
                             "type": "set",
-                            "expression": "$gloopException.type == 'SQLIntegrityConstraintViolationException' ? 400 : 500",
+                            "expression": "500",
                             "evaluate": true,
                             "to": [
                                 "responseCode"
@@ -178,6 +368,30 @@
                             "to": [
                                 "response",
                                 "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "ERROR",
+                            "to": [
+                                "APIException",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
+                                "message"
                             ]
                         }
                     ]

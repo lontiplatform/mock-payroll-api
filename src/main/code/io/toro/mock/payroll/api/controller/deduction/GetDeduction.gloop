@@ -1,5 +1,4 @@
 {
-    "comments": "This service fetches a deduction from the database.",
     "input": [
         {
             "name": "id"
@@ -7,23 +6,30 @@
     ],
     "output": [
         {
-            "name": "deduction",
+            "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+            "reference": "io.toro.mock.payroll.model.APIResponse",
             "gloopProperties": [
                 {
-                    "name": "id"
+                    "name": "deduction",
+                    "type": "model",
+                    "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+                    "gloopProperties": [
+                        {
+                            "name": "id"
+                        }
+                    ]
                 }
             ]
         },
         {
-            "name": "error",
-            "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
-        },
-        {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -50,9 +56,21 @@
                         {
                             "from": [
                                 "selectDeductionOutput",
+                                "ID"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "id"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
                                 "NAME"
                             ],
                             "to": [
+                                "response",
                                 "deduction",
                                 "name"
                             ]
@@ -63,6 +81,7 @@
                                 "DESCRIPTION"
                             ],
                             "to": [
+                                "response",
                                 "deduction",
                                 "description"
                             ]
@@ -73,8 +92,20 @@
                                 "TYPE"
                             ],
                             "to": [
+                                "response",
                                 "deduction",
                                 "type"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectDeductionOutput",
+                                "APPLICABLE_TO"
+                            ],
+                            "to": [
+                                "response",
+                                "deduction",
+                                "applicableTo"
                             ]
                         },
                         {
@@ -83,6 +114,7 @@
                                 "METHOD"
                             ],
                             "to": [
+                                "response",
                                 "deduction",
                                 "method"
                             ]
@@ -93,18 +125,9 @@
                                 "AMOUNT"
                             ],
                             "to": [
+                                "response",
                                 "deduction",
                                 "amount"
-                            ]
-                        },
-                        {
-                            "from": [
-                                "selectDeductionOutput",
-                                "APPLICABLE_TO"
-                            ],
-                            "to": [
-                                "deduction",
-                                "applicableTo"
                             ]
                         },
                         {
@@ -113,6 +136,7 @@
                                 "ENABLED"
                             ],
                             "to": [
+                                "response",
                                 "deduction",
                                 "enabled"
                             ]
@@ -125,13 +149,53 @@
                             ]
                         },
                         {
-                            "from": [
-                                "selectDeductionOutput",
-                                "ID"
-                            ],
+                            "type": "set",
+                            "expression": "SUCCESS",
                             "to": [
-                                "deduction",
-                                "id"
+                                "response",
+                                "result"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "response?.deduction?.id != null",
+                    "children": [
+                        {
+                            "label": "false",
+                            "lines": [
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "responseCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "ERROR",
+                                    "to": [
+                                        "APIException",
+                                        "result"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "404",
+                                    "to": [
+                                        "APIException",
+                                        "httpErrorCode"
+                                    ]
+                                },
+                                {
+                                    "type": "set",
+                                    "expression": "Deduction record not found.",
+                                    "to": [
+                                        "APIException",
+                                        "message"
+                                    ]
+                                }
                             ]
                         }
                     ]
@@ -172,28 +236,10 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "error",
-                                "message"
-                            ]
-                        },
-                        {
                             "type": "set",
                             "expression": "500",
                             "to": [
                                 "responseCode"
-                            ]
-                        },
-                        {
-                            "type": "set",
-                            "expression": "ERROR",
-                            "to": [
-                                "error",
-                                "result"
                             ]
                         }
                     ]

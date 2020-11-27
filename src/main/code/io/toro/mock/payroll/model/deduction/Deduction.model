@@ -3,13 +3,16 @@
     "type": "model",
     "gloopProperties": [
         {
-            "name": "name"
+            "name": "name",
+            "comments": "The name for this deduction record."
         },
         {
-            "name": "description"
+            "name": "description",
+            "comments": "Short description that describes what the deduction is for."
         },
         {
             "name": "type",
+            "comments": "The deduction type. Applicable values are: <code>PRE-TAX</code>,<code>TAX</code>,<code>POST-TAX</code>.",
             "choices": [
                 "PRE-TAX",
                 "TAX",
@@ -18,6 +21,7 @@
         },
         {
             "name": "method",
+            "comments": "The deduction method to apply. <code>FIXED</code> deducts definite amount while <code>PERCENTAGE</code> deducts a portion(%) from the gross pay.",
             "choices": [
                 "FIXED",
                 "PERCENTAGE"
@@ -25,10 +29,12 @@
         },
         {
             "name": "amount",
-            "type": "double"
+            "type": "double",
+            "comments": "The base amount to deduct."
         },
         {
             "name": "applicableTo",
+            "comments": "The id of the employee to whom this deduction rule will apply, or <code>ALL</code> to apply for every employee.",
             "choices": [
                 "ALL"
             ],
@@ -36,7 +42,8 @@
         },
         {
             "name": "enabled",
-            "type": "boolean"
+            "type": "boolean",
+            "comments": "true if the deduction is active, false if it's not."
         }
     ]
 }

@@ -1,29 +1,35 @@
 {
-    "comments": "This service fetches all the users from the database.",
     "output": [
         {
-            "name": "users",
+            "name": "response",
             "type": "model",
-            "array": true,
-            "reference": "io.toro.mock.payroll.model.user.User",
+            "reference": "io.toro.mock.payroll.model.APIResponse",
             "gloopProperties": [
                 {
-                    "name": "userId"
-                },
-                {
-                    "name": "hourlyRate",
-                    "type": "double"
+                    "name": "users",
+                    "type": "model",
+                    "array": true,
+                    "reference": "io.toro.mock.payroll.model.user.User",
+                    "gloopProperties": [
+                        {
+                            "name": "userId"
+                        },
+                        {
+                            "name": "hourlyRate",
+                            "type": "double"
+                        }
+                    ]
                 }
             ]
         },
         {
-            "name": "error",
-            "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
-        },
-        {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -39,12 +45,12 @@
                         {
                             "variables": [
                                 {
-                                    "name": "usersCursor",
+                                    "name": "selectAllUsersInputCursor",
                                     "type": "model",
                                     "array": true,
                                     "gloopProperties": [
                                         {
-                                            "name": "USERID",
+                                            "name": "USER_ID",
                                             "required": true,
                                             "allowNull": false
                                         },
@@ -56,6 +62,7 @@
                                         {
                                             "name": "HOURLY_RATE",
                                             "type": "double",
+                                            "required": true,
                                             "allowNull": false
                                         }
                                     ]
@@ -65,65 +72,83 @@
                     ],
                     "outputs": [
                         {
-                            "from": [
-                                "selectAllUsersInputCursor"
-                            ],
-                            "to": [
-                                "usersCursor"
-                            ]
-                        },
-                        {
                             "type": "set",
                             "expression": "200",
                             "to": [
                                 "responseCode"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "selectAllUsersInputCursor"
+                            ],
+                            "to": [
+                                "selectAllUsersInputCursor"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Successfully fetched all users.",
+                            "to": [
+                                "response",
+                                "message"
                             ]
                         }
                     ]
                 },
                 {
                     "type": "iterate",
-                    "comments": "map the cursor to the output",
                     "input": {
                         "path": [
-                            "usersCursor"
+                            "selectAllUsersInputCursor"
                         ]
                     },
                     "output": {
                         "path": [
+                            "response",
                             "users"
                         ]
                     },
                     "children": [
                         {
-                            "comments": "map the data from the cursor to the output model",
                             "lines": [
                                 {
                                     "from": [
-                                        "usersCursor",
-                                        "NAME"
+                                        "selectAllUsersInputCursor",
+                                        "USER_ID"
                                     ],
                                     "to": [
-                                        "users",
-                                        "name"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "usersCursor",
-                                        "USERID"
-                                    ],
-                                    "to": [
+                                        "response",
                                         "users",
                                         "userId"
                                     ]
                                 },
                                 {
                                     "from": [
-                                        "usersCursor",
+                                        "selectAllUsersInputCursor",
+                                        "NAME"
+                                    ],
+                                    "to": [
+                                        "response",
+                                        "users",
+                                        "name"
+                                    ]
+                                },
+                                {
+                                    "from": [
+                                        "selectAllUsersInputCursor",
                                         "HOURLY_RATE"
                                     ],
                                     "to": [
+                                        "response",
                                         "users",
                                         "hourlyRate"
                                     ]
@@ -168,16 +193,6 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "error",
-                                "message"
-                            ]
-                        },
-                        {
                             "type": "set",
                             "expression": "500",
                             "to": [
@@ -188,8 +203,24 @@
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "error",
+                                "APIException",
                                 "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request",
+                            "to": [
+                                "APIException",
+                                "message"
                             ]
                         }
                     ]

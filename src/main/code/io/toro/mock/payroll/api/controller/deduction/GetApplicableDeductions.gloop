@@ -1,5 +1,4 @@
 {
-    "comments": "This service lists deductions currently applicable to a user.",
     "input": [
         {
             "name": "userId"
@@ -7,24 +6,31 @@
     ],
     "output": [
         {
-            "name": "deductions",
+            "name": "response",
             "type": "model",
-            "array": true,
-            "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+            "reference": "io.toro.mock.payroll.model.APIResponse",
             "gloopProperties": [
                 {
-                    "name": "id"
+                    "name": "deductions",
+                    "type": "model",
+                    "array": true,
+                    "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+                    "gloopProperties": [
+                        {
+                            "name": "id"
+                        }
+                    ]
                 }
             ]
         },
         {
-            "name": "error",
-            "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
-        },
-        {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -34,58 +40,13 @@
             "children": [
                 {
                     "type": "invokeGloop",
-                    "comments": "fetch applicable deductions from the database",
-                    "name": "io.toro.mock.payroll.sql.deduction.SelectApplicableDeductions",
+                    "name": "io.toro.mock.payroll.sql.user.SelectUser",
                     "declare": [
                         {
                             "variables": [
                                 {
-                                    "name": "deductionsCursor",
-                                    "type": "model",
-                                    "array": true,
-                                    "gloopProperties": [
-                                        {
-                                            "name": "ID",
-                                            "required": true,
-                                            "allowNull": false
-                                        },
-                                        {
-                                            "name": "NAME",
-                                            "required": true,
-                                            "allowNull": false
-                                        },
-                                        {
-                                            "name": "DESCRIPTION",
-                                            "required": true
-                                        },
-                                        {
-                                            "name": "TYPE",
-                                            "required": true,
-                                            "allowNull": false
-                                        },
-                                        {
-                                            "name": "APPLICABLE_TO",
-                                            "required": true,
-                                            "allowNull": false
-                                        },
-                                        {
-                                            "name": "METHOD",
-                                            "required": true,
-                                            "allowNull": false
-                                        },
-                                        {
-                                            "name": "AMOUNT",
-                                            "type": "double",
-                                            "required": true,
-                                            "allowNull": false
-                                        },
-                                        {
-                                            "name": "ENABLED",
-                                            "type": "boolean",
-                                            "required": true,
-                                            "allowNull": false
-                                        }
-                                    ]
+                                    "name": "userFound",
+                                    "type": "boolean"
                                 }
                             ]
                         }
@@ -96,124 +57,295 @@
                                 "userId"
                             ],
                             "to": [
-                                "selectApplicableDeductionsInput",
-                                "userId"
+                                "selectUserInput",
+                                "userid"
                             ]
                         }
                     ],
                     "outputs": [
                         {
-                            "from": [
-                                "selectApplicableDeductionsInputCursor"
-                            ],
-                            "to": [
-                                "deductionsCursor"
-                            ]
-                        },
-                        {
                             "type": "set",
-                            "expression": "200",
+                            "expression": "$gloopOutput?.selectUserOutput?.USER_ID != null",
+                            "evaluate": true,
                             "to": [
-                                "responseCode"
+                                "userFound"
                             ]
                         }
                     ]
                 },
                 {
-                    "type": "iterate",
-                    "comments": "map cursor to output",
-                    "input": {
-                        "path": [
-                            "deductionsCursor"
-                        ]
-                    },
-                    "output": {
-                        "path": [
-                            "deductions"
-                        ]
-                    },
+                    "type": "invokeCode",
+                    "className": "io.toro.martini.LoggerMethods",
+                    "methodName": "info",
+                    "parameters": [
+                        "java.lang.String"
+                    ],
+                    "inputs": [
+                        {
+                            "type": "set",
+                            "expression": "userFound",
+                            "evaluate": true,
+                            "to": [
+                                "message"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "fork",
+                    "expression": "userFound",
                     "children": [
                         {
-                            "comments": "map data from cursor to the output model",
+                            "type": "block",
+                            "label": "true",
+                            "children": [
+                                {
+                                    "type": "invokeGloop",
+                                    "comments": "fetch applicable deductions from the database",
+                                    "name": "io.toro.mock.payroll.sql.deduction.SelectApplicableDeductions",
+                                    "declare": [
+                                        {
+                                            "variables": [
+                                                {
+                                                    "name": "deductionsCursor",
+                                                    "type": "model",
+                                                    "array": true,
+                                                    "gloopProperties": [
+                                                        {
+                                                            "name": "ID",
+                                                            "required": true,
+                                                            "allowNull": false
+                                                        },
+                                                        {
+                                                            "name": "NAME",
+                                                            "required": true,
+                                                            "allowNull": false
+                                                        },
+                                                        {
+                                                            "name": "DESCRIPTION",
+                                                            "required": true
+                                                        },
+                                                        {
+                                                            "name": "TYPE",
+                                                            "required": true,
+                                                            "allowNull": false
+                                                        },
+                                                        {
+                                                            "name": "APPLICABLE_TO",
+                                                            "required": true,
+                                                            "allowNull": false
+                                                        },
+                                                        {
+                                                            "name": "METHOD",
+                                                            "required": true,
+                                                            "allowNull": false
+                                                        },
+                                                        {
+                                                            "name": "AMOUNT",
+                                                            "type": "double",
+                                                            "required": true,
+                                                            "allowNull": false
+                                                        },
+                                                        {
+                                                            "name": "ENABLED",
+                                                            "type": "boolean",
+                                                            "required": true,
+                                                            "allowNull": false
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "inputs": [
+                                        {
+                                            "from": [
+                                                "userId"
+                                            ],
+                                            "to": [
+                                                "selectApplicableDeductionsInput",
+                                                "userId"
+                                            ]
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "from": [
+                                                "selectApplicableDeductionsInputCursor"
+                                            ],
+                                            "to": [
+                                                "deductionsCursor"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "200",
+                                            "to": [
+                                                "responseCode"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "SUCCESS",
+                                            "to": [
+                                                "response",
+                                                "result"
+                                            ]
+                                        },
+                                        {
+                                            "type": "set",
+                                            "expression": "Listing all deductions applicable for requested user.",
+                                            "to": [
+                                                "response",
+                                                "message"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "iterate",
+                                    "comments": "map cursor to output",
+                                    "input": {
+                                        "path": [
+                                            "deductionsCursor"
+                                        ]
+                                    },
+                                    "output": {
+                                        "path": [
+                                            "response",
+                                            "deductions"
+                                        ]
+                                    },
+                                    "children": [
+                                        {
+                                            "comments": "map data from cursor to the output model",
+                                            "lines": [
+                                                {
+                                                    "from": [
+                                                        "deductionsCursor",
+                                                        "ID"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deductions",
+                                                        "id"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "deductionsCursor",
+                                                        "NAME"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deductions",
+                                                        "name"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "deductionsCursor",
+                                                        "DESCRIPTION"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deductions",
+                                                        "description"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "deductionsCursor",
+                                                        "TYPE"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deductions",
+                                                        "type"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "deductionsCursor",
+                                                        "APPLICABLE_TO"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deductions",
+                                                        "applicableTo"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "deductionsCursor",
+                                                        "ENABLED"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deductions",
+                                                        "enabled"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "deductionsCursor",
+                                                        "AMOUNT"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deductions",
+                                                        "amount"
+                                                    ]
+                                                },
+                                                {
+                                                    "from": [
+                                                        "deductionsCursor",
+                                                        "METHOD"
+                                                    ],
+                                                    "to": [
+                                                        "response",
+                                                        "deductions",
+                                                        "method"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "label": "false",
                             "lines": [
                                 {
-                                    "from": [
-                                        "deductionsCursor",
-                                        "ID"
-                                    ],
+                                    "type": "set",
+                                    "expression": "ERROR",
                                     "to": [
-                                        "deductions",
-                                        "id"
+                                        "APIException",
+                                        "result"
                                     ]
                                 },
                                 {
-                                    "from": [
-                                        "deductionsCursor",
-                                        "NAME"
-                                    ],
+                                    "type": "set",
+                                    "expression": "404",
                                     "to": [
-                                        "deductions",
-                                        "name"
+                                        "APIException",
+                                        "httpErrorCode"
                                     ]
                                 },
                                 {
-                                    "from": [
-                                        "deductionsCursor",
-                                        "DESCRIPTION"
-                                    ],
+                                    "type": "set",
+                                    "expression": "User not found.",
                                     "to": [
-                                        "deductions",
-                                        "description"
+                                        "APIException",
+                                        "message"
                                     ]
                                 },
                                 {
-                                    "from": [
-                                        "deductionsCursor",
-                                        "TYPE"
-                                    ],
+                                    "type": "set",
+                                    "expression": "404",
                                     "to": [
-                                        "deductions",
-                                        "type"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "deductionsCursor",
-                                        "APPLICABLE_TO"
-                                    ],
-                                    "to": [
-                                        "deductions",
-                                        "applicableTo"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "deductionsCursor",
-                                        "METHOD"
-                                    ],
-                                    "to": [
-                                        "deductions",
-                                        "method"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "deductionsCursor",
-                                        "AMOUNT"
-                                    ],
-                                    "to": [
-                                        "deductions",
-                                        "amount"
-                                    ]
-                                },
-                                {
-                                    "from": [
-                                        "deductionsCursor",
-                                        "ENABLED"
-                                    ],
-                                    "to": [
-                                        "deductions",
-                                        "enabled"
+                                        "responseCode"
                                     ]
                                 }
                             ]
@@ -266,17 +398,23 @@
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "error",
+                                "APIException",
                                 "result"
                             ]
                         },
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
+                            "type": "set",
+                            "expression": "500",
                             "to": [
-                                "error",
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

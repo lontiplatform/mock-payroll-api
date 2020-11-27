@@ -1,25 +1,31 @@
 {
-    "comments": "This service lists deductions from the database.",
     "output": [
         {
-            "name": "deductions",
+            "name": "response",
             "type": "model",
-            "array": true,
-            "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+            "reference": "io.toro.mock.payroll.model.APIResponse",
             "gloopProperties": [
                 {
-                    "name": "id"
+                    "name": "deductions",
+                    "type": "model",
+                    "array": true,
+                    "reference": "io.toro.mock.payroll.model.deduction.Deduction",
+                    "gloopProperties": [
+                        {
+                            "name": "id"
+                        }
+                    ]
                 }
             ]
         },
         {
-            "name": "error",
-            "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
-        },
-        {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -100,6 +106,22 @@
                             "to": [
                                 "responseCode"
                             ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "SUCCESS",
+                            "to": [
+                                "response",
+                                "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Deductions fetch successfully.",
+                            "to": [
+                                "response",
+                                "message"
+                            ]
                         }
                     ]
                 },
@@ -113,6 +135,7 @@
                     },
                     "output": {
                         "path": [
+                            "response",
                             "deductions"
                         ]
                     },
@@ -126,6 +149,7 @@
                                         "ID"
                                     ],
                                     "to": [
+                                        "response",
                                         "deductions",
                                         "id"
                                     ]
@@ -136,6 +160,7 @@
                                         "NAME"
                                     ],
                                     "to": [
+                                        "response",
                                         "deductions",
                                         "name"
                                     ]
@@ -146,6 +171,7 @@
                                         "DESCRIPTION"
                                     ],
                                     "to": [
+                                        "response",
                                         "deductions",
                                         "description"
                                     ]
@@ -156,6 +182,7 @@
                                         "TYPE"
                                     ],
                                     "to": [
+                                        "response",
                                         "deductions",
                                         "type"
                                     ]
@@ -166,6 +193,7 @@
                                         "APPLICABLE_TO"
                                     ],
                                     "to": [
+                                        "response",
                                         "deductions",
                                         "applicableTo"
                                     ]
@@ -176,6 +204,7 @@
                                         "METHOD"
                                     ],
                                     "to": [
+                                        "response",
                                         "deductions",
                                         "method"
                                     ]
@@ -186,6 +215,7 @@
                                         "AMOUNT"
                                     ],
                                     "to": [
+                                        "response",
                                         "deductions",
                                         "amount"
                                     ]
@@ -196,6 +226,7 @@
                                         "ENABLED"
                                     ],
                                     "to": [
+                                        "response",
                                         "deductions",
                                         "enabled"
                                     ]
@@ -250,17 +281,23 @@
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "error",
+                                "APIException",
                                 "result"
                             ]
                         },
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
+                            "type": "set",
+                            "expression": "500",
                             "to": [
-                                "error",
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
                                 "message"
                             ]
                         }

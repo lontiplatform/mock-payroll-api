@@ -1,5 +1,4 @@
 {
-    "comments": "This service registers a user to the database.",
     "input": [
         {
             "name": "user",
@@ -17,11 +16,32 @@
         {
             "name": "response",
             "type": "model",
-            "reference": "io.toro.mock.payroll.model.APIResponse"
+            "reference": "io.toro.mock.payroll.model.APIResponse",
+            "gloopProperties": [
+                {
+                    "name": "user",
+                    "type": "model",
+                    "reference": "io.toro.mock.payroll.model.user.User",
+                    "gloopProperties": [
+                        {
+                            "name": "userId"
+                        },
+                        {
+                            "name": "hourlyRate",
+                            "type": "double"
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "responseCode",
             "type": "integer"
+        },
+        {
+            "name": "APIException",
+            "type": "model",
+            "reference": "io.toro.martini.api.APIException"
         }
     ],
     "steps": [
@@ -31,22 +51,37 @@
             "children": [
                 {
                     "comments": "generate a random ID",
-                    "declare": [
-                        {
-                            "variables": [
-                                {
-                                    "name": "id"
-                                }
-                            ]
-                        }
-                    ],
                     "lines": [
+                        {
+                            "from": [
+                                "user",
+                                "name"
+                            ],
+                            "to": [
+                                "response",
+                                "user",
+                                "name"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "user",
+                                "hourlyRate"
+                            ],
+                            "to": [
+                                "response",
+                                "user",
+                                "hourlyRate"
+                            ]
+                        },
                         {
                             "type": "set",
                             "expression": "UUID.randomUUID()",
                             "evaluate": true,
                             "to": [
-                                "id"
+                                "response",
+                                "user",
+                                "userId"
                             ]
                         }
                     ]
@@ -55,23 +90,9 @@
                     "type": "invokeGloop",
                     "comments": "insert the user data into the database",
                     "name": "io.toro.mock.payroll.sql.user.InsertUser",
-                    "unload": [
-                        [
-                            "id"
-                        ]
-                    ],
                     "inputs": [
                         {
                             "from": [
-                                "id"
-                            ],
-                            "to": [
-                                "insertUserInput",
-                                "userid"
-                            ]
-                        },
-                        {
-                            "from": [
                                 "user",
                                 "name"
                             ],
@@ -88,6 +109,17 @@
                             "to": [
                                 "insertUserInput",
                                 "hourlyRate"
+                            ]
+                        },
+                        {
+                            "from": [
+                                "response",
+                                "user",
+                                "userId"
+                            ],
+                            "to": [
+                                "insertUserInput",
+                                "userId"
                             ]
                         }
                     ],
@@ -102,7 +134,7 @@
                         },
                         {
                             "type": "set",
-                            "expression": "\"Successfully created user with id: ${id}\"",
+                            "expression": "\"Successfully created user with id: ${response?.user?.userId}\"",
                             "evaluate": true,
                             "to": [
                                 "response",
@@ -154,19 +186,8 @@
                     "comments": "map the appropriate error response",
                     "lines": [
                         {
-                            "from": [
-                                "$gloopException",
-                                "message"
-                            ],
-                            "to": [
-                                "response",
-                                "message"
-                            ]
-                        },
-                        {
                             "type": "set",
-                            "expression": "$gloopException.type == 'SQLIntegrityConstraintViolationException' ? 400 : 500",
-                            "evaluate": true,
+                            "expression": "500",
                             "to": [
                                 "responseCode"
                             ]
@@ -175,8 +196,24 @@
                             "type": "set",
                             "expression": "ERROR",
                             "to": [
-                                "response",
+                                "APIException",
                                 "result"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "500",
+                            "to": [
+                                "APIException",
+                                "httpErrorCode"
+                            ]
+                        },
+                        {
+                            "type": "set",
+                            "expression": "Encountered an exception while processing the request.",
+                            "to": [
+                                "APIException",
+                                "message"
                             ]
                         }
                     ]
